@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-hero">
+    <div class="container"><span class="eyebrow">PLATAFORMA IOT</span><h1>Monitoreo</h1><p>Espacio destinado a visualizar las lecturas del prototipo y la información almacenada.</p></div>
+</section>
+<section class="section section-light">
+    <div class="container">
+        <div class="status-banner"><span class="status-dot status-dot-muted"></span><div><strong>Integración pendiente</strong><p>La interfaz está preparada. La recepción de datos del ESP32, la API y las consultas a SQL Server se conectarán en una siguiente fase.</p></div></div>
+        <div class="monitor-grid">
+            <article class="monitor-card"><span class="card-label">AMBIENTE</span><h3>Temperatura</h3><div class="metric-placeholder">-- <small>°C</small></div><p>DHT22 · Sin conexión de datos</p></article>
+            <article class="monitor-card"><span class="card-label">AMBIENTE</span><h3>Humedad relativa</h3><div class="metric-placeholder">-- <small>%</small></div><p>DHT22 · Sin conexión de datos</p></article>
+            <article class="monitor-card"><span class="card-label">ILUMINACIÓN</span><h3>Intensidad lumínica</h3><div class="metric-placeholder">-- <small>lux</small></div><p>BH1750 · Sin conexión de datos</p></article>
+            <article class="monitor-card"><span class="card-label">SUSTRATO</span><h3>Parcela 1</h3><div class="metric-placeholder">-- <small>ADC</small></div><p>Capacitivo 1 · Sin conexión de datos</p></article>
+            <article class="monitor-card"><span class="card-label">SUSTRATO</span><h3>Parcela 2</h3><div class="metric-placeholder">-- <small>ADC</small></div><p>Capacitivo 2 · Sin conexión de datos</p></article>
+            <article class="monitor-card"><span class="card-label">DETECCIÓN DE AGUA</span><h3>FC-37</h3><div class="metric-placeholder">--</div><p>Estado · Sin conexión de datos</p></article>
+        </div>
+        <p class="footnote">Los guiones indican que todavía no se está consultando una fuente de datos en vivo. No representan lecturas del sensor.</p>
+    </div>
+</section>
+{% endblock %}

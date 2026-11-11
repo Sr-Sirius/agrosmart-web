@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-hero">
+    <div class="container"><span class="eyebrow">INTELIGENCIA DE NEGOCIOS</span><h1>Analítica</h1><p>Espacio destinado al dashboard y a los resultados del análisis exploratorio de AgroSmart.</p></div>
+</section>
+<section class="section section-light">
+    <div class="container">
+        {% if powerbi_embed_url %}
+            <div class="embed-frame"><iframe title="Dashboard de Power BI AgroSmart" src="{{ powerbi_embed_url }}" allowfullscreen></iframe></div>
+        {% else %}
+            <div class="empty-state"><span class="empty-icon">▦</span><h2>Dashboard en preparación</h2><p>Cuando el informe de Power BI esté publicado y se haya configurado una URL de inserción adecuada, aparecerá en esta sección.</p><p class="footnote">La URL se configurará mediante la variable de entorno POWERBI_EMBED_URL. No se deben publicar credenciales ni enlaces privados con tokens en el repositorio.</p></div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

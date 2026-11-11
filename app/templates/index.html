@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-copy">
+            <span class="eyebrow">AGROTECH · NEOGRID</span>
+            <h1>Datos inteligentes para una <em>agricultura</em> más conectada.</h1>
+            <p>AgroSmart integra sensores, procesamiento de datos y análisis para observar las condiciones ambientales y del sustrato en un entorno agropecuario.</p>
+            <div class="hero-actions">
+                <a class="button button-primary" href="{{ url_for('project.overview') }}">Conocer el proyecto</a>
+                <a class="button button-secondary" href="{{ url_for('monitoring.dashboard') }}">Ver monitoreo</a>
+            </div>
+            <div class="hero-note"><span class="status-dot"></span> Prototipo IoT y plataforma analítica en desarrollo</div>
+        </div>
+        <div class="hero-visual" aria-label="Ilustración conceptual de agricultura inteligente">
+            <div class="visual-sun"></div>
+            <div class="visual-hill hill-back"></div>
+            <div class="visual-hill hill-front"></div>
+            <div class="visual-row row-one"></div><div class="visual-row row-two"></div><div class="visual-row row-three"></div>
+            <div class="visual-chip chip-top"><span>01</span> Sensores IoT</div>
+            <div class="visual-chip chip-bottom"><span>02</span> Datos y analítica</div>
+        </div>
+    </div>
+</section>
+
+<section class="section section-light">
+    <div class="container">
+        <div class="section-heading">
+            <span class="eyebrow">SOLUCIÓN INTEGRADA</span>
+            <h2>Del entorno físico a la información útil</h2>
+            <p>El sistema conecta la captura de variables agroambientales con el almacenamiento y la interpretación de los datos.</p>
+        </div>
+        <div class="feature-grid">
+            <article class="feature-card"><span class="feature-number">01</span><h3>Monitoreo ambiental</h3><p>Consulta de temperatura, humedad relativa, iluminación y detección de agua.</p></article>
+            <article class="feature-card"><span class="feature-number">02</span><h3>Monitoreo del sustrato</h3><p>Seguimiento de las lecturas de humedad de dos parcelas de referencia.</p></article>
+            <article class="feature-card"><span class="feature-number">03</span><h3>Control de compuerta</h3><p>Representación del accionamiento de una compuerta a partir de condiciones de iluminación.</p></article>
+        </div>
+    </div>
+</section>
+
+<section class="section section-dark">
+    <div class="container closing-grid">
+        <div><span class="eyebrow eyebrow-light">NEOGRID</span><h2>Una sección agropecuaria dentro de una ciudad inteligente.</h2></div>
+        <p>AgroSmart hace parte de NEOGRID, una propuesta académica que integra diferentes módulos tecnológicos para representar servicios y procesos de una ciudad inteligente.</p>
+    </div>
+</section>
+{% endblock %}

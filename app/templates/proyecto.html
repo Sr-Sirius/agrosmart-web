@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-hero">
+    <div class="container"><span class="eyebrow">AGROSMART</span><h1>El proyecto</h1><p>Conoce el propósito, los procesos y la arquitectura de nuestra solución de monitoreo agropecuario.</p></div>
+</section>
+<section class="section section-light">
+    <div class="container content-narrow">
+        <h2>Propósito</h2>
+        <p>AgroSmart es un sistema académico de monitoreo y gestión ambiental agropecuaria que integra sensores conectados a un ESP32, almacenamiento de datos y herramientas de análisis.</p>
+        <h2>Procesos principales</h2>
+        <div class="info-list">
+            <article><span>01</span><div><h3>Monitoreo ambiental</h3><p>Captura de temperatura, humedad relativa, iluminación y presencia de agua.</p></div></article>
+            <article><span>02</span><div><h3>Monitoreo del sustrato</h3><p>Registro y comparación de lecturas de dos sensores capacitivos instalados en parcelas de referencia.</p></div></article>
+            <article><span>03</span><div><h3>Control de compuerta</h3><p>Accionamiento de un servomotor de acuerdo con umbrales operativos de iluminación.</p></div></article>
+        </div>
+        <h2>Arquitectura de datos</h2>
+        <p>La solución contempla una base de datos relacional para la operación y el almacenamiento de mediciones y eventos, y un Data Warehouse independiente para el análisis multidimensional y la integración con Power BI.</p>
+        <div class="notice"><strong>Estado del desarrollo</strong><p>Esta sección es la estructura inicial de documentación. Los diagramas, resultados del ETL y hallazgos analíticos se incorporarán cuando sus respectivas etapas estén verificadas.</p></div>
+    </div>
+</section>
+{% endblock %}
