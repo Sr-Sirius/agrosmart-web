@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% import 'macros/charts.html' as charts with context %}
+{% block content %}
+{{ ui.page_hero('ANALÍTICA · INTERPRETAR', 'Conocimientos evidentes', 'Cinco hallazgos verificables obtenidos de los análisis del dashboard. Cada uno se documenta con su pregunta, variables, procedimiento, resultado, hallazgo, interpretación, utilidad y limitación.') }}
+
+<section class="section section-light">
+    <div class="container">
+        <nav class="knowledge-index" aria-label="Conocimientos">
+            {% for k in c.CONOCIMIENTOS %}
+            <a href="#{{ k.id }}"><span>{{ k.id }}</span>{{ k.titulo }}</a>
+            {% endfor %}
+        </nav>
+
+        {% for k in c.CONOCIMIENTOS %}
+        <article class="knowledge" id="{{ k.id }}">
+            <header class="knowledge-head">
+                <span class="knowledge-id">{{ k.id }}</span>
+                <div>
+                    <span class="tag">{{ k.analisis }}</span>
+                    <h2>{{ k.titulo }}</h2>
+                </div>
+            </header>
+            <div class="knowledge-body">
+                <div class="knowledge-visual">
+                    <span class="visual-label">Visualización de respaldo · {{ c.PERIODO_CORTO }}</span>
+                    {{ charts.by_key(k.grafico) }}
+                    <p class="footnote">En el dashboard: página «{{ k.pagina }}». <a href="{{ url_for('analytics.dashboard') }}#dashboard">Abrir el dashboard</a></p>
+                </div>
+                <dl class="knowledge-grid">
+                    <div><dt>Pregunta</dt><dd>{{ k.pregunta }}</dd></div>
+                    <div><dt>Variables</dt><dd>{{ k.variables }}</dd></div>
+                    <div><dt>Procedimiento</dt><dd>{{ k.procedimiento }}</dd></div>
+                    <div><dt>Resultado</dt><dd>{{ k.resultado }}</dd></div>
+                    <div class="kg-strong"><dt>Hallazgo</dt><dd>{{ k.hallazgo }}</dd></div>
+                    <div><dt>Interpretación</dt><dd>{{ k.interpretacion }}</dd></div>
+                    <div><dt>Utilidad</dt><dd>{{ k.utilidad }}</dd></div>
+                    <div class="kg-limit"><dt>Limitación</dt><dd>{{ k.limitacion }}</dd></div>
+                </dl>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

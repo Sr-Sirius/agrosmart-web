@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% import 'macros/charts.html' as charts with context %}
+{% block content %}
+{{ ui.page_hero('ANALÍTICA · VALIDAR Y COMUNICAR', 'Validación y decisiones', 'Cómo se comprobaron los hallazgos y qué decisiones de gestión se proponen a partir de ellos.') }}
+
+<section class="section section-light">
+    <div class="container">
+        <div class="content-narrow">
+            {{ ui.local_nav([('lista', 'Lista de validación'), ('reproduccion', 'Reproducción en SQL'), ('grupos', 'Grupos, faltantes y atípicos'), ('regla', 'Revisión de la regla de alerta'), ('decisiones', 'Decisiones')]) }}
+            <h2 id="lista" class="h2">Lista de validación</h2>
+            <p>Cada hallazgo se revisó con las ocho preguntas de validación del conocimiento evidente.</p>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Pregunta</th><th>Cómo se comprobó</th></tr></thead>
+            <tbody>
+                <tr><td>¿Se obtiene directamente de los datos?</td><td>Todos los valores salen de medidas DAX sobre AgroSmart DW, sin cifras escritas a mano.</td></tr>
+                <tr><td>¿El procedimiento puede repetirse?</td><td>La matriz M1 se reprodujo en SQL Server con GROUP BY ROLLUP y dio exactamente los mismos valores. El código M y DAX está publicado.</td></tr>
+                <tr><td>¿La gráfica corresponde a las variables?</td><td>Cada visual tiene filtros explícitos (por ejemplo, VAR-001 en el histograma y es_diurna = True en B3), y su título indica la unidad.</td></tr>
+                <tr><td>¿Se compararon cantidades y porcentajes?</td><td>Eventos por tipo en cantidad y %, alertas en cantidad y tasa por 1.000 mediciones, y lecturas del sustrato en cantidad y %.</td></tr>
+                <tr><td>¿El grupo tiene suficientes registros?</td><td>El grupo más pequeño comparado es «con lluvia» en B3, con 10.800 lecturas. Las franjas tienen entre 32.400 y 43.200 mediciones por sensor.</td></tr>
+                <tr><td>¿Influyen faltantes o valores atípicos?</td><td>No hay nulos ni valores fuera de rango. Los valores bajos del sustrato y de la iluminación se investigaron y corresponden a los bloques de lluvia, por lo que se conservaron.</td></tr>
+                <tr><td>¿Se evitó afirmar causalidad?</td><td>Las relaciones se presentan como asociaciones, y se aclara cuándo reproducen una regla del generador.</td></tr>
+                <tr><td>¿Responde al problema del proyecto?</td><td>Los hallazgos apuntan al monitoreo del sustrato, a la selectividad de las alertas y a dónde y cuándo actuar.</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="split" id="reproduccion">
+            <div>
+                <h2 class="h2">Reproducción en SQL Server</h2>
+                <p>La consulta suma las alertas por ubicación y franja directamente en el Data Warehouse, con el mismo periodo del dashboard. Sus resultados coinciden con la matriz M1: 25.146 alertas en total, 18.466 en Parcela 2 y 7.976 en Parcela 2 de noche.</p>
+                {{ ui.code(c.SQL_M1, 'Ver consulta SQL de validación') }}
+            </div>
+            {{ ui.figure('pbi-validacion-sql.webp', 'Consulta de validación en SSMS y su resultado, igual a la matriz de Power BI.') }}
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="grupos" class="h2">Tamaño de los grupos, faltantes y atípicos</h2>
+            <ul class="check-list">
+                <li><strong>Tamaño de los grupos:</strong> 142.856 lecturas por variable y sensor. En la matriz, las franjas tienen 43.200 (madrugada), 34.856 (mañana, el 04/11 termina a las 07:21) y 32.400 mediciones (tarde y noche) por sensor. Por eso se usa la tasa por 1.000 mediciones además de la cantidad absoluta.</li>
+                <li><strong>Faltantes:</strong> 0 mediciones sin valor. Los 25.581 registros sin <code>condicion_lluvia</code> son eventos, que no tienen ciclo de lluvia asociado, y se excluyen de B3 a propósito.</li>
+                <li><strong>Atípicos:</strong> se investigaron antes de decidir qué hacer con ellos. Las 12.346 lecturas de sustrato por debajo de 2.800 ADC ocurren todas en ciclos con lluvia. La iluminación diurna menor de 150 lux aparece en el 47,0 % de las lecturas con lluvia y solo en el 3,3 % sin lluvia. Ambos casos son comportamiento esperado del escenario, por lo que se conservaron.</li>
+                <li><strong>Último día incompleto:</strong> el 04/11 solo tiene datos hasta las 07:21 (373 eventos). Se indica en el subtítulo del gráfico de eventos por día para no leerlo como una caída.</li>
+                <li><strong>Control de la hora en B3:</strong> como dos de los tres bloques de lluvia fueron de tarde, la comparación se repitió solo entre 12 y 17 h. La diferencia se mantuvo (−82,1 %).</li>
+            </ul>
+
+            <h2 id="regla" class="h2">Revisión de la regla de alerta del sustrato</h2>
+            <p>La alerta se emite cada vez que una lectura cruza 3.300 ADC. Con un ruido de ±100 ADC, la lectura oscila alrededor del umbral y produce alertas repetidas: cada alerta del sensor 2 dura en promedio 2,0 lecturas (unos 4 s) y cada alerta del sensor 1, 1,14 lecturas. Se recalcularon, de forma retrospectiva, tres reglas alternativas sobre las mismas lecturas:</p>
+        </div>
+        <div class="split split-wide-left">
+            <div class="table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Regla</th><th>Sensor 1</th><th>Sensor 2</th><th>Total</th><th>Cambio</th></tr></thead>
+                <tbody>
+                    {% for row in c.REGLAS_TABLA %}<tr>{% for cell in row %}<td{% if not loop.first %} class="num"{% endif %}>{{ cell }}</td>{% endfor %}</tr>{% endfor %}
+                </tbody>
+            </table>
+            </div>
+            <div class="callout">
+                <span class="eyebrow">LECTURA CORREGIDA</span>
+                <p>Con histéresis, las dos parcelas tienen casi los mismos episodios (4.636 y 4.678). La Parcela 2 no tiene más episodios secos, sino episodios más largos. Para comparar parcelas, el % de lecturas ≥ 3.300 ADC es mejor indicador que el número de alertas.</p>
+            </div>
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="decisiones" class="h2">Decisiones sustentadas</h2>
+            <p>Las decisiones corresponden al escenario simulado y muestran cómo el análisis puede orientar la gestión del módulo. Antes de aplicarlas en un cultivo real deben probarse con lecturas reales del ESP32.</p>
+        </div>
+
+        {% for d in c.DECISIONES %}
+        <article class="decision" id="{{ d.id }}">
+            <header class="knowledge-head">
+                <span class="knowledge-id decision-id">{{ d.id }}</span>
+                <div><span class="tag">Decisión sustentada</span><h2>{{ d.titulo }}</h2></div>
+            </header>
+            <div class="knowledge-body">
+                <div class="knowledge-visual">
+                    <span class="visual-label">{% if d.id == 'D1' %}Alertas de sustrato según la regla y el sensor{% else %}% de lecturas del sustrato ≥ 3.300 ADC por sensor{% endif %} · {{ c.PERIODO_CORTO }}</span>
+                    {{ charts.by_key(d.grafico) }}
+                </div>
+                <dl class="knowledge-grid">
+                    <div class="kg-strong"><dt>Acción propuesta</dt><dd>{{ d.accion }}</dd></div>
+                    <div><dt>Hallazgo y valores</dt><dd>{{ d.hallazgo }}</dd></div>
+                    <div><dt>Dirigida a</dt><dd>{{ d.dirigida }}</dd></div>
+                    <div><dt>Mejora esperada</dt><dd>{{ d.mejora }}</dd></div>
+                    <div><dt>Indicador de seguimiento</dt><dd>{{ d.indicador }}</dd></div>
+                    <div class="kg-limit"><dt>Limitaciones</dt><dd>{{ d.limitaciones }}</dd></div>
+                </dl>
+            </div>
+            {% if d.id == 'D2' %}{{ ui.code(c.MEDIDA_D2, 'Ver medida DAX del indicador de seguimiento') }}{% endif %}
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

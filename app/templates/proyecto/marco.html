@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% block content %}
+{{ ui.page_hero('PROYECTO', 'Marco referencial', 'Antecedentes y conceptos que sustentan el diseño de AgroSmart, con las fuentes consultadas.') }}
+
+<section class="section section-light">
+    <div class="container content-narrow">
+        {{ ui.local_nav([('antecedentes', 'Antecedentes'), ('conceptos', 'Marco conceptual'), ('fuentes', 'Fuentes')]) }}
+
+        <h2 id="antecedentes">Antecedentes</h2>
+        <div class="ref-cards">
+            <article class="ref-card">
+                <span class="ref-tag">IoT en agricultura</span>
+                <h3>Farooq et al. (2019)</h3>
+                <p>Revisión publicada en <i>IEEE Access</i> sobre el papel del Internet de las Cosas en la agricultura inteligente. Organiza estas soluciones en cuatro componentes: estructura física, adquisición de datos, procesamiento y analítica de datos.</p>
+                <p class="ref-use"><strong>Aporte a AgroSmart:</strong> el módulo reproduce esas cuatro capas: maqueta y sensores, captura en el ESP32, almacenamiento y ETL en SQL Server, y analítica en Power BI.</p>
+            </article>
+            <article class="ref-card">
+                <span class="ref-tag">Big Data en agricultura</span>
+                <h3>Wolfert et al. (2017)</h3>
+                <p>Revisión sobre Big Data en la agricultura inteligente. Describe un ciclo ciberfísico de gestión en el que los dispositivos conectados generan datos que apoyan decisiones operativas, y señala que la gobernanza de los datos es un reto central.</p>
+                <p class="ref-use"><strong>Aporte a AgroSmart:</strong> el sitio sigue el ciclo observar → analizar → decidir, que termina en las decisiones D1 y D2.</p>
+            </article>
+            <article class="ref-card">
+                <span class="ref-tag">Análisis de datos agrícolas</span>
+                <h3>Kamilaris et al. (2017)</h3>
+                <p>Revisión de 34 estudios que aplican análisis de grandes volúmenes de datos en agricultura. Concluye que la práctica se encuentra en una etapa temprana y que existen barreras de hardware, software y acceso a los datos.</p>
+                <p class="ref-use"><strong>Aporte a AgroSmart:</strong> justifica un prototipo académico que documente el proceso completo y pueda reproducirse.</p>
+            </article>
+            <article class="ref-card">
+                <span class="ref-tag">Sensores de bajo costo</span>
+                <h3>Placidi et al. (2020)</h3>
+                <p>Caracterización experimental del sensor capacitivo comercial «Capacitive Soil Moisture Sensor v1.2», el mismo modelo usado en las parcelas de AgroSmart. Para un tipo de suelo definido, el sensor ofrece una relación confiable entre su voltaje de salida y el contenido gravimétrico de agua.</p>
+                <p class="ref-use"><strong>Aporte a AgroSmart:</strong> respalda el uso del sensor y advierte que las lecturas ADC deben calibrarse con el sustrato real antes de interpretarlas como contenido de agua.</p>
+            </article>
+            <article class="ref-card">
+                <span class="ref-tag">Contexto del agua</span>
+                <h3>FAO (s. f.)</h3>
+                <p>Según el sistema AQUASTAT de la FAO, la agricultura utiliza cerca del 70 % de las extracciones mundiales de agua dulce.</p>
+                <p class="ref-use"><strong>Aporte a AgroSmart:</strong> sitúa la importancia de monitorear la humedad del sustrato para decidir cuándo regar.</p>
+            </article>
+        </div>
+
+        <h2 id="conceptos">Marco conceptual</h2>
+        <dl class="concepts">
+            <dt>Internet de las Cosas (IoT)</dt>
+            <dd>Red de objetos físicos con sensores y capacidad de comunicación que capturan datos del entorno. En AgroSmart, el ESP32 coordina cinco sensores y un actuador.</dd>
+            <dt>Agricultura inteligente</dt>
+            <dd>Uso de tecnologías de información y comunicación en el ciclo de gestión de la producción agropecuaria, de modo que las decisiones se basen en datos y no solo en la ubicación o la observación (Wolfert et al., 2017).</dd>
+            <dt>Lecturas ADC</dt>
+            <dd>Valor digital que entrega el conversor analógico-digital del microcontrolador. Las lecturas de humedad del sustrato y de lluvia analógica se conservan en ADC: no son porcentajes de humedad ni milímetros de lluvia. En los sensores capacitivos, un valor más alto indica un sustrato más seco.</dd>
+            <dt>Modelo relacional y Data Warehouse</dt>
+            <dd>La base relacional AgroSmartDB registra la operación con integridad referencial. El Data Warehouse AgroSmart DW reorganiza la información en un esquema estrella, con una tabla de hechos rodeada de dimensiones, que facilita el análisis por tiempo, dispositivo, ubicación y proceso (Kimball y Ross, 2013; Microsoft, s. f.-c).</dd>
+            <dt>ETL y SSIS</dt>
+            <dd>Proceso de extracción, transformación y carga implementado con SQL Server Integration Services. Usa transformaciones de búsqueda (Lookup) para obtener las llaves sustitutas, divisiones condicionales para validar reglas y salidas de error para conservar los registros rechazados (Microsoft, 2026a, 2026b, 2026c).</dd>
+            <dt>CRISP-DM</dt>
+            <dd>Modelo de proceso estándar para proyectos de minería y análisis de datos, organizado en seis fases cíclicas: comprensión del negocio, comprensión de los datos, preparación, modelado, evaluación y despliegue (Chapman et al., 2000).</dd>
+            <dt>Conocimiento evidente</dt>
+            <dd>Hallazgo verificable obtenido con conteos, estadísticas descriptivas, agrupaciones, comparaciones y visualizaciones, sin modelos predictivos. Cada conocimiento se documenta con pregunta, variables, procedimiento, resultado, hallazgo, interpretación, utilidad y limitación.</dd>
+            <dt>Histéresis</dt>
+            <dd>Regla con dos umbrales: uno para activar la alerta y otro, más bajo, para rearmarla. Evita que una señal con ruido que oscila alrededor de un único umbral genere alertas repetidas.</dd>
+        </dl>
+
+        <h2 id="fuentes">Fuentes</h2>
+        <p>Las referencias completas, en formato APA 7, están en <a href="{{ url_for('results.conclusions') }}#referencias">Conclusiones y referencias</a>.</p>
+    </div>
+</section>
+{% endblock %}

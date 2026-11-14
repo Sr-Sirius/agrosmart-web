@@ -1,47 +1,95 @@
 {% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
 {% block content %}
 <section class="hero">
     <div class="container hero-grid">
         <div class="hero-copy">
-            <span class="eyebrow">AGROTECH · NEOGRID</span>
+            <span class="eyebrow">AGROTECH · NEOGRID · PROYECTO DE GESTIÓN DEL CONOCIMIENTO</span>
             <h1>Datos inteligentes para una <em>agricultura</em> más conectada.</h1>
-            <p>AgroSmart integra sensores, procesamiento de datos y análisis para observar las condiciones ambientales y del sustrato en un entorno agropecuario.</p>
+            <p>AgroSmart es el módulo agropecuario de la ciudad inteligente NEOGRID. Integra sensores conectados a un ESP32, una base de datos relacional, un Data Warehouse y un dashboard de Power BI para convertir lecturas ambientales y del sustrato en conocimiento verificable y en decisiones de gestión.</p>
             <div class="hero-actions">
                 <a class="button button-primary" href="{{ url_for('project.overview') }}">Conocer el proyecto</a>
-                <a class="button button-secondary" href="{{ url_for('monitoring.dashboard') }}">Ver monitoreo</a>
+                <a class="button button-secondary" href="{{ url_for('analytics.dashboard') }}">Ver el dashboard</a>
             </div>
-            <div class="hero-note"><span class="status-dot"></span> Prototipo IoT y plataforma analítica en desarrollo</div>
+            <div class="hero-note"><span class="status-dot"></span> Análisis sobre 1.025.573 registros simulados del {{ c.PERIODO_CORTO }}</div>
         </div>
-        <div class="hero-visual" aria-label="Ilustración conceptual de agricultura inteligente">
-            <div class="visual-sun"></div>
-            <div class="visual-hill hill-back"></div>
-            <div class="visual-hill hill-front"></div>
-            <div class="visual-row row-one"></div><div class="visual-row row-two"></div><div class="visual-row row-three"></div>
-            <div class="visual-chip chip-top"><span>01</span> Sensores IoT</div>
-            <div class="visual-chip chip-bottom"><span>02</span> Datos y analítica</div>
-        </div>
+        <figure class="hero-photo">
+            <img src="{{ url_for('static', filename='img/agro-tablero.jpg') }}" alt="Tablero AgroSmart: dos parcelas con sensores capacitivos, sensor DHT22, placa de lluvia FC-37 y establo con compuerta accionada por servomotor" width="1400" height="1050">
+            <figcaption>Tablero AgroSmart (35 × 50 cm): parcelas con sensores capacitivos, DHT22, FC-37 y establo con compuerta.</figcaption>
+        </figure>
     </div>
 </section>
 
 <section class="section section-light">
     <div class="container">
         <div class="section-heading">
-            <span class="eyebrow">SOLUCIÓN INTEGRADA</span>
-            <h2>Del entorno físico a la información útil</h2>
-            <p>El sistema conecta la captura de variables agroambientales con el almacenamiento y la interpretación de los datos.</p>
+            <span class="eyebrow">CIFRAS DEL PROYECTO</span>
+            <h2>Del sensor al conocimiento</h2>
+            <p>La cadena completa de datos se construyó y validó en cuatro entregas, desde el prototipo físico hasta el análisis en Power BI.</p>
         </div>
-        <div class="feature-grid">
-            <article class="feature-card"><span class="feature-number">01</span><h3>Monitoreo ambiental</h3><p>Consulta de temperatura, humedad relativa, iluminación y detección de agua.</p></article>
-            <article class="feature-card"><span class="feature-number">02</span><h3>Monitoreo del sustrato</h3><p>Seguimiento de las lecturas de humedad de dos parcelas de referencia.</p></article>
-            <article class="feature-card"><span class="feature-number">03</span><h3>Control de compuerta</h3><p>Representación del accionamiento de una compuerta a partir de condiciones de iluminación.</p></article>
+        <div class="kpi-grid">
+            <div class="kpi"><span>Mediciones analizadas</span><strong>999.992</strong><small>142.856 ciclos de 7 lecturas</small></div>
+            <div class="kpi"><span>Eventos registrados</span><strong>25.581</strong><small>25.146 son alertas</small></div>
+            <div class="kpi"><span>Dispositivos</span><strong>7</strong><small>5 sensores, 1 actuador, 1 controlador</small></div>
+            <div class="kpi"><span>Data Warehouse</span><strong>1 + 8</strong><small>tabla de hechos y dimensiones</small></div>
         </div>
     </div>
 </section>
 
-<section class="section section-dark">
-    <div class="container closing-grid">
-        <div><span class="eyebrow eyebrow-light">NEOGRID</span><h2>Una sección agropecuaria dentro de una ciudad inteligente.</h2></div>
-        <p>AgroSmart hace parte de NEOGRID, una propuesta académica que integra diferentes módulos tecnológicos para representar servicios y procesos de una ciudad inteligente.</p>
+<section class="section section-soft">
+    <div class="container">
+        <div class="section-heading">
+            <span class="eyebrow">QUÉ HACE AGROSMART</span>
+            <h2>Tres procesos sobre el mismo prototipo</h2>
+        </div>
+        <div class="feature-grid">
+            <article class="feature-card"><span class="feature-number">PRO-001</span><h3>Monitoreo ambiental</h3><p>Temperatura y humedad relativa (DHT22), iluminación (BH1750) y detección de lluvia (FC-37).</p></article>
+            <article class="feature-card"><span class="feature-number">PRO-002</span><h3>Monitoreo del sustrato</h3><p>Lecturas ADC de dos sensores capacitivos, uno por parcela, con clasificación del estado y alertas por umbral.</p></article>
+            <article class="feature-card"><span class="feature-number">PRO-003</span><h3>Control de compuerta</h3><p>Apertura y cierre de la compuerta del establo con un servomotor SG90, según la iluminación registrada.</p></article>
+        </div>
+    </div>
+</section>
+
+<section class="section section-light">
+    <div class="container split">
+        <div>
+            <span class="eyebrow">NEOGRID</span>
+            <h2 class="h2">Una sección agropecuaria dentro de una ciudad inteligente</h2>
+            <p class="lead">NEOGRID es una maqueta académica de ciudad inteligente armada con 7 tableros (120 × 100 cm) que comparten una red de 5 V. Cada equipo desarrolla un componente con su propio ESP32 y sus propios datos.</p>
+            <ul class="component-list">
+                {% for comp in c.NEOGRID_COMPONENTES %}
+                <li class="{% if comp.actual %}is-current{% endif %}"><strong>{{ comp.nombre }}</strong><span>{{ comp.detalle }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="stack">
+            {{ ui.figure('neogrid-render.jpg', 'Render 3D de NEOGRID. AgroSmart ocupa la esquina con el cultivo, el establo y el corral.') }}
+            {{ ui.figure('neogrid-maqueta.jpg', 'Maqueta física de NEOGRID armada con los siete tableros.') }}
+        </div>
+    </div>
+</section>
+
+<section class="section section-soft">
+    <div class="container">
+        <div class="section-heading">
+            <span class="eyebrow">RECORRIDO DEL SITIO</span>
+            <h2>Cómo está organizado este sitio</h2>
+            <p>El menú sigue la estructura de los lineamientos del Proyecto de Gestión del Conocimiento (PGC) y la secuencia de trabajo: preguntar, medir, comparar, visualizar, interpretar, validar y comunicar.</p>
+        </div>
+        <div class="route-grid">
+            <a class="route-card" href="{{ url_for('project.overview') }}"><span>01 · Proyecto</span><h3>Identificación, problema, justificación y objetivos</h3></a>
+            <a class="route-card" href="{{ url_for('project.framework') }}"><span>02 · Proyecto</span><h3>Marco referencial y antecedentes</h3></a>
+            <a class="route-card" href="{{ url_for('project.methodology') }}"><span>03 · Proyecto</span><h3>Metodología CRISP-DM y cronograma</h3></a>
+            <a class="route-card" href="{{ url_for('project.solution') }}"><span>04 · Proyecto</span><h3>Desarrollo de la solución y arquitectura</h3></a>
+            <a class="route-card" href="{{ url_for('project.data') }}"><span>05 · Proyecto</span><h3>Gestión de los datos: MER, simulación, DW y ETL</h3></a>
+            <a class="route-card" href="{{ url_for('analytics.preparation') }}"><span>06 · Analítica</span><h3>Preparación del análisis y preguntas</h3></a>
+            <a class="route-card route-card-accent" href="{{ url_for('analytics.dashboard') }}"><span>07 · Analítica</span><h3>Dashboard interactivo de Power BI</h3></a>
+            <a class="route-card" href="{{ url_for('analytics.knowledge') }}"><span>08 · Analítica</span><h3>Cinco conocimientos evidentes</h3></a>
+            <a class="route-card" href="{{ url_for('analytics.decisions') }}"><span>09 · Analítica</span><h3>Validación y dos decisiones sustentadas</h3></a>
+            <a class="route-card" href="{{ url_for('results.products') }}"><span>10 · Resultados</span><h3>Productos, resultados y evidencias</h3></a>
+            <a class="route-card" href="{{ url_for('results.conclusions') }}"><span>11 · Resultados</span><h3>Conclusiones y referencias</h3></a>
+            <a class="route-card" href="{{ url_for('monitoring.dashboard') }}"><span>Plataforma IoT</span><h3>Monitoreo de las variables del módulo</h3></a>
+        </div>
     </div>
 </section>
 {% endblock %}

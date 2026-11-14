@@ -1,0 +1,38 @@
+{# Componentes de interfaz reutilizables #}
+
+{% macro page_hero(eyebrow, title, text) -%}
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow">{{ eyebrow }}</span>
+        <h1>{{ title }}</h1>
+        {% if text %}<p>{{ text }}</p>{% endif %}
+    </div>
+</section>
+{%- endmacro %}
+
+{% macro local_nav(items) -%}
+<nav class="local-nav" aria-label="En esta página">
+    <span>En esta página</span>
+    {% for anchor, label in items %}<a href="#{{ anchor }}">{{ label }}</a>{% endfor %}
+</nav>
+{%- endmacro %}
+
+{% macro figure(file, caption, alt=None, wide=False) -%}
+<figure class="evidence{% if wide %} evidence-wide{% endif %}">
+    <a href="{{ url_for('static', filename='img/' ~ file) }}" target="_blank" rel="noopener" title="Abrir la imagen en tamaño completo">
+        <img src="{{ url_for('static', filename='img/' ~ file) }}" alt="{{ alt or caption }}" loading="lazy">
+    </a>
+    <figcaption>{{ caption }}</figcaption>
+</figure>
+{%- endmacro %}
+
+{% macro status(kind, label) -%}
+<span class="status-chip status-{{ kind }}">{{ label }}</span>
+{%- endmacro %}
+
+{% macro code(text, label=None) -%}
+<details class="code-block">
+    <summary>{{ label or 'Ver código' }}</summary>
+    <pre><code>{{ text }}</code></pre>
+</details>
+{%- endmacro %}

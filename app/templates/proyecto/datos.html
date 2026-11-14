@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% block content %}
+{{ ui.page_hero('PROYECTO', 'Gestión de los datos', 'Modelo relacional, simulación del millón de mediciones, modelo multidimensional y proceso ETL en SSIS.') }}
+
+<section class="section section-light">
+    <div class="container">
+        <div class="content-narrow">
+            {{ ui.local_nav([('relacional', 'Modelo relacional'), ('simulacion', 'Simulación'), ('multidimensional', 'Modelo multidimensional'), ('etl', 'ETL en SSIS')]) }}
+        </div>
+
+        <div class="split" id="relacional">
+            <div>
+                <span class="eyebrow">AGROSMARTDB</span>
+                <h2 class="h2">Modelo relacional</h2>
+                <p>La base AgroSmartDB, implementada en SQL Server, tiene ocho entidades. Las tablas de referencia describen el sistema y las tablas transaccionales guardan su actividad:</p>
+                <ul class="check-list">
+                    <li><strong>Referencia:</strong> USUARIO (3 roles), PROCESO (3), UBICACION (5), DISPOSITIVO (7), VARIABLE (6) y PROCESO_DISPOSITIVO (10 asignaciones, relación muchos a muchos con llave compuesta).</li>
+                    <li><strong>Transaccionales:</strong> MEDICION, una fila por lectura con su ciclo de captura, y EVENTO, con alertas y acciones asociadas a una medición de referencia.</li>
+                </ul>
+                <p>Las llaves primarias y foráneas, las restricciones CHECK y los valores mínimo y máximo de cada variable protegen la integridad de los datos. Cada medición conserva su origen (REAL o SIMULADO).</p>
+            </div>
+            {{ ui.figure('mer-agrosmartdb.webp', 'Modelo entidad-relación de AgroSmartDB (informe R2-A8, figura 1).') }}
+        </div>
+
+        <div class="content-narrow" id="simulacion">
+            <span class="eyebrow">MÁS DE UN MILLÓN DE MEDICIONES</span>
+            <h2 class="h2">Simulación de las mediciones</h2>
+            <p>Para alcanzar el volumen exigido sin esperar meses de captura real, se desarrolló un generador en SQL Server basado en operaciones por conjuntos. Primero cuenta las mediciones existentes y luego genera los ciclos completos necesarios para superar el millón. Todos los registros generados quedan marcados con origen SIMULADO.</p>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+            <tbody>
+                <tr><td>Objetivo mínimo</td><td>1.000.000 de mediciones</td></tr>
+                <tr><td>Mediciones de prueba iniciales</td><td>11</td></tr>
+                <tr><td>Ciclos generados</td><td>142.856 ciclos completos de 7 lecturas</td></tr>
+                <tr><td>Mediciones generadas</td><td>999.992</td></tr>
+                <tr><td>Total en MEDICION</td><td>1.000.003</td></tr>
+                <tr><td>Frecuencia</td><td>Un ciclo cada 2 segundos</td></tr>
+                <tr><td>Periodo simulado</td><td>{{ c.PERIODO }}</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="content-narrow">
+            <h3>Reglas de comportamiento</h3>
+            <p>Las reglas reproducen ciclos diarios, ruido y el efecto de la lluvia, dentro de los rangos de operación observados en las pruebas de los sensores. Conocerlas ayuda a interpretar los resultados, porque varios hallazgos reflejan parámetros del generador.</p>
+            <ul class="check-list">
+                <li><strong>Temperatura:</strong> 17,5 + 5,5 · sen(2π(h − 10)/24) + ruido − 1,2 · lluvia + 3,5 · anomalía.</li>
+                <li><strong>Sustrato:</strong> sensor 1 = 3.150 + 100 · sen(2π(h − 14)/24) + ruido (±100) − 420 · lluvia; sensor 2 = 3.260 + 80 · sen(…) + ruido (±100) − 350 · lluvia. En ambos, el máximo diario cae hacia las 20 h.</li>
+                <li><strong>Iluminación:</strong> factor solar entre 6 y 18 h × (900 + ruido) × 0,18 cuando llueve.</li>
+                <li><strong>Lluvia:</strong> bloques de 3 horas: 01/11 de 15:00 a 18:00, 03/11 de 12:00 a 15:00 y 04/11 de 00:00 a 03:00.</li>
+                <li><strong>Alertas por cruce de umbral:</strong> sustrato ≥ 3.300 ADC cuando la lectura anterior era menor; temperatura ≥ 25 °C cuando la anterior era menor; iluminación &lt; 150 lux entre 7 y 17 h cuando la anterior era mayor o igual.</li>
+            </ul>
+        </div>
+        <div class="gallery">
+            {{ ui.figure('simulacion-generador.webp', 'Validación del generador: 142.856 ciclos, 999.992 registros adicionales y 1.000.003 mediciones en total.') }}
+            {{ ui.figure('simulacion-variables.webp', 'Distribución de las mediciones por variable: 142.858 por variable y 285.714 de humedad del sustrato (dos sensores).') }}
+        </div>
+
+        <div class="split" id="multidimensional">
+            <div>
+                <span class="eyebrow">AGROSMART DW</span>
+                <h2 class="h2">Modelo multidimensional</h2>
+                <p>El Data Warehouse sigue un esquema estrella (Kimball y Ross, 2013). La tabla de hechos FACT_REGISTRO_AGROSMART tiene un grano de un registro por medición o por evento, distinguidos por <code>tipo_registro</code>. Sus medidas son <code>valor_numerico</code>, <code>cantidad_mediciones</code> y <code>cantidad_eventos</code>.</p>
+                <div class="table-wrap">
+                <table class="data-table compact">
+                    <thead><tr><th>Dimensión</th><th>Permite analizar por</th></tr></thead>
+                    <tbody>
+                        <tr><td>DIM_FECHA</td><td>Día, semana, mes, trimestre y fin de semana</td></tr>
+                        <tr><td>DIM_HORA</td><td>Hora (0–23), franja del día y periodo diurno</td></tr>
+                        <tr><td>DIM_DISPOSITIVO</td><td>Dispositivo y tipo (sensor, actuador, controlador)</td></tr>
+                        <tr><td>DIM_UBICACION</td><td>Parcelas, ambiente general, acceso y centro de control</td></tr>
+                        <tr><td>DIM_PROCESO</td><td>Los tres procesos del módulo</td></tr>
+                        <tr><td>DIM_CONCEPTO</td><td>6 variables y 6 tipos de evento</td></tr>
+                        <tr><td>DIM_ESTADO</td><td>Clasificación de la lectura o severidad del evento</td></tr>
+                        <tr><td>DIM_ORIGEN_DATO</td><td>REAL o SIMULADO</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            {{ ui.figure('dw-estrella.webp', 'Esquema estrella de AgroSmart DW: una tabla de hechos y ocho dimensiones (R2-A8, figura 14).') }}
+        </div>
+
+        <div class="content-narrow" id="etl">
+            <span class="eyebrow">SQL SERVER INTEGRATION SERVICES</span>
+            <h2 class="h2">Proceso ETL en SSIS</h2>
+            <p>El paquete <code>ETL_AgroSmart.dtsx</code> extrae los datos de AgroSmartDB, los transforma y los carga en AgroSmart DW mediante dos administradores de conexión (CM_AgroSmartDB y CM_AgroSmartDW). El flujo de control tiene cuatro contenedores, y cada uno empieza solo si el anterior terminó con éxito.</p>
+        </div>
+        {{ ui.figure('ssis-contenedores.webp', 'Contenedores del flujo de control del paquete ETL_AgroSmart.dtsx.', wide=True) }}
+        <div class="content-narrow">
+            <ol class="objective-list">
+                <li><strong>SEQ_1_PREPARACION:</strong> valida DIM_HORA y DIM_ORIGEN_DATO y asigna el identificador de la ejecución.</li>
+                <li><strong>SEQ_2_DIMENSIONES:</strong> seis flujos que cargan dispositivo, ubicación, proceso, concepto, estado y fecha. Usan columnas derivadas para limpiar y homologar textos, conversión de Unicode a ANSI, agregación para obtener estados únicos y búsquedas para no insertar filas existentes.</li>
+                <li><strong>SEQ_3_HECHOS:</strong> carga las mediciones y los eventos con una cadena de 8 búsquedas de llaves sustitutas. Una división condicional valida rangos y referencias, y las filas que no cumplen se envían a <code>etl.REGISTRO_RECHAZADO</code> con su motivo.</li>
+                <li><strong>SEQ_4_CIERRE:</strong> compara los conteos de origen y destino de los 8 flujos y registra el cuadre en <code>etl.CONTROL_CARGA</code>.</li>
+            </ol>
+            <h3>Resultados de las ejecuciones</h3>
+            <ul class="check-list">
+                <li><strong>Ejecución 1 (carga inicial):</strong> 7 dispositivos, 5 ubicaciones, 3 procesos, 12 conceptos, 13 estados, 5 fechas, 1.000.003 mediciones y 25.587 eventos, sin rechazos y con cuadre = 1 en los 8 flujos. El DW quedó con 1.025.590 filas en la tabla de hechos.</li>
+                <li><strong>Prevención de duplicados:</strong> una búsqueda de existencia con la opción «Redirect rows to no match output» envía al destino solo las filas nuevas. Al repetir la ejecución, las filas ya cargadas se omiten.</li>
+                <li><strong>Ejecución 3 (prueba controlada de rechazos):</strong> con registros de prueba insertados a propósito, el paquete rechazó 2 mediciones por VALOR_FUERA_DE_RANGO y 1 evento por REFERENCIA_INEXISTENTE, y cargó solo las filas válidas.</li>
+            </ul>
+            <p>Con esa prueba, la tabla de hechos llegó a 1.025.593 filas. El análisis en Power BI excluye las 20 filas de prueba y trabaja con las 1.025.573 del periodo simulado (ver <a href="{{ url_for('analytics.preparation') }}">Preparación del análisis</a>).</p>
+        </div>
+        <div class="gallery">
+            {{ ui.figure('ssis-hechos.webp', 'Ejecución exitosa de SEQ_3_HECHOS: carga y conteo de mediciones y eventos.') }}
+            {{ ui.figure('etl-conteos.webp', 'Conteos de la ejecución 1 en etl.CONTROL_CARGA y total de filas de la tabla de hechos.') }}
+            {{ ui.figure('etl-rechazos.webp', 'Validación de la ejecución 3: conteos, cuadre y rechazos por motivo.') }}
+            {{ ui.figure('ssis-proyecto.webp', 'Proyecto SSIS compilado sin errores en Visual Studio.') }}
+        </div>
+    </div>
+</section>
+{% endblock %}

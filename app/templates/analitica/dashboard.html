@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% block content %}
+{{ ui.page_hero('ANALÍTICA · COMPARAR Y VISUALIZAR', 'Dashboard de Power BI', 'Informe interactivo construido sobre AgroSmart DW. Las segmentaciones y los gráficos responden directamente desde esta página.') }}
+
+<section class="section section-light">
+    <div class="container">
+        <div class="kpi-grid kpi-grid-4">
+            {% for i in c.INDICADORES %}
+            <div class="kpi">
+                <span>{{ i.nombre }}</span>
+                <strong>{{ i.valor }}{% if i.unidad == '°C' %} <small class="kpi-unit">°C</small>{% endif %}</strong>
+                <small>{{ i.denominador or i.calculo }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="footnote">Valores sin filtros · {{ c.PERIODO }} · Fuente: AgroSmart DW.</p>
+
+        <div id="dashboard" class="embed-block">
+            {% if powerbi_embed_url %}
+                <div class="embed-frame">
+                    <iframe title="Dashboard de Power BI de AgroSmart" src="{{ powerbi_embed_url }}" allowfullscreen loading="lazy"></iframe>
+                </div>
+                <p class="embed-actions"><a class="button button-secondary" href="{{ powerbi_embed_url }}" target="_blank" rel="noopener">Abrir el dashboard en una pestaña nueva</a></p>
+            {% else %}
+                <div class="empty-state">
+                    <span class="empty-icon">▦</span>
+                    <h2>El dashboard se mostrará aquí</h2>
+                    <p>El informe se insertará cuando esté publicado en Power BI Service y se configure la variable de entorno <code>POWERBI_EMBED_URL</code> en Render.</p>
+                    <p class="footnote">Mientras tanto, las capturas de abajo muestran las páginas del informe en Power BI Desktop.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="split">
+            <div>
+                <h2 class="h2">Cómo usar el dashboard</h2>
+                <ol class="objective-list">
+                    <li>Elija una página con las pestañas de la parte inferior del informe.</li>
+                    <li>Use las segmentaciones de <strong>Fecha</strong>, <strong>Franja del día</strong>, <strong>Ubicación</strong> y <strong>Tipo de dispositivo</strong>. Todos los visuales de la página se recalculan.</li>
+                    <li>Haga clic en una barra o en una celda para filtrar los demás visuales de la página (interacción cruzada).</li>
+                    <li>Pase el cursor sobre un elemento para ver su cantidad exacta y el número de mediciones.</li>
+                    <li>En la página multivariada, la segmentación <strong>Concepto</strong> permite ver un solo tipo de alerta.</li>
+                </ol>
+                <p class="footnote">Dos pruebas rápidas de los filtros: en «Resumen», al seleccionar la fecha 02/11/2026 la tarjeta de eventos debe mostrar 9.174. En «Análisis multivariado», al elegir ALERTA_ILUMINACION en la segmentación de concepto, la matriz debe mostrar 807 alertas, todas en Acceso del invernadero y en la tarde.</p>
+            </div>
+            <div>
+                <h2 class="h2">Páginas del informe</h2>
+                <div class="table-wrap">
+                <table class="data-table compact">
+                    <thead><tr><th>Página</th><th>Contenido</th></tr></thead>
+                    <tbody>
+                        <tr><td>1. Resumen</td><td>Indicadores generales, eventos registrados por día y segmentaciones.</td></tr>
+                        <tr><td>2. Análisis univariados</td><td>U1 temperatura, U2 eventos por tipo, U3 estado del sustrato.</td></tr>
+                        <tr><td>3. Análisis bivariados</td><td>B1 temperatura y humedad por hora, B2 sustrato por sensor, B3 iluminación con y sin lluvia.</td></tr>
+                        <tr><td>4. Análisis multivariado</td><td>M1 matriz de alertas por ubicación, tipo de dispositivo y franja.</td></tr>
+                        <tr><td>5. Validación</td><td>Conteos de control, ciclos con lluvia y consulta SQL de reproducción.</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="h2">Capturas del informe</h2>
+        <p class="footnote">Las capturas complementan el dashboard insertado; no lo reemplazan.</p>
+        <div class="gallery">
+            {{ ui.figure('pbi-resumen.webp', 'Página 1 · Resumen: indicadores, segmentaciones y eventos por día.') }}
+            {{ ui.figure('pbi-univariados.webp', 'Página 2 · Análisis univariados (U1, U2 y U3).') }}
+            {{ ui.figure('pbi-bivariados.webp', 'Página 3 · Análisis bivariados (B1, B2 y B3).') }}
+            {{ ui.figure('pbi-multivariado.webp', 'Página 4 · Análisis multivariado (M1).') }}
+        </div>
+    </div>
+</section>
+{% endblock %}

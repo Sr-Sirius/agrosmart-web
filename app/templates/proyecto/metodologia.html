@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% block content %}
+{{ ui.page_hero('PROYECTO', 'Metodología y cronograma', 'El proyecto siguió las seis fases de CRISP-DM. Cada fase produjo evidencias verificables que se publican en este sitio.') }}
+
+<section class="section section-light">
+    <div class="container">
+        <div class="content-narrow">
+            {{ ui.local_nav([('crisp', 'Fases CRISP-DM'), ('cronograma', 'Cronograma'), ('iteracion', 'Iteraciones')]) }}
+            <h2 id="crisp" class="h2">Fases de CRISP-DM aplicadas a AgroSmart</h2>
+            <p>CRISP-DM organiza un proyecto de datos en seis fases que pueden repetirse cuando una fase posterior revela un problema (Chapman et al., 2000). En AgroSmart, la fase de «modelado» corresponde al análisis exploratorio descriptivo en Power BI, porque la actividad busca conocimiento evidente y no modelos predictivos.</p>
+        </div>
+
+        <ol class="phase-grid">
+            <li class="phase">
+                <span class="phase-num">1</span>
+                <h3>Comprensión del negocio</h3>
+                <p><strong>Actividades:</strong> planeación de NEOGRID, división de la ciudad en tableros y componentes, definición de los procesos de AgroSmart y render 3D con medidas y ubicaciones.</p>
+                <p><strong>Evidencias:</strong> render 3D, plano de tableros y procesos PRO-001 a PRO-003.</p>
+            </li>
+            <li class="phase">
+                <span class="phase-num">2</span>
+                <h3>Comprensión de los datos</h3>
+                <p><strong>Actividades:</strong> construcción de la maqueta en madera con laminado, instalación de los sensores y conexiones, y pruebas de lectura para definir los rangos de operación de cada variable.</p>
+                <p><strong>Evidencias:</strong> fotos del tablero, 6 variables y sus unidades (°C, %, ADC, lux, 0/1).</p>
+            </li>
+            <li class="phase">
+                <span class="phase-num">3</span>
+                <h3>Preparación de los datos</h3>
+                <p><strong>Actividades:</strong> modelo relacional AgroSmartDB, simulación de 1.000.003 mediciones, Data Warehouse en estrella y ETL en SSIS con controles de rechazo y cuadre.</p>
+                <p><strong>Evidencias:</strong> informe R2-A8, MER, diagrama estrella, ejecución del paquete y conteos (<a href="{{ url_for('project.data') }}">Gestión de los datos</a>).</p>
+            </li>
+            <li class="phase">
+                <span class="phase-num">4</span>
+                <h3>Modelado (análisis exploratorio)</h3>
+                <p><strong>Actividades:</strong> modelo semántico en Power BI, medidas DAX, preguntas P1–P8, 8 indicadores, 3 análisis univariados, 3 bivariados y 1 multivariado.</p>
+                <p><strong>Evidencias:</strong> <a href="{{ url_for('analytics.preparation') }}">preparación del análisis</a> y <a href="{{ url_for('analytics.dashboard') }}">dashboard</a>.</p>
+            </li>
+            <li class="phase">
+                <span class="phase-num">5</span>
+                <h3>Evaluación</h3>
+                <p><strong>Actividades:</strong> reproducción de resultados en SQL Server, revisión de grupos, faltantes y atípicos, recálculo de la regla de alerta, cinco conocimientos y dos decisiones.</p>
+                <p><strong>Evidencias:</strong> <a href="{{ url_for('analytics.knowledge') }}">conocimientos</a> y <a href="{{ url_for('analytics.decisions') }}">validación y decisiones</a>.</p>
+            </li>
+            <li class="phase">
+                <span class="phase-num">6</span>
+                <h3>Despliegue</h3>
+                <p><strong>Actividades:</strong> publicación del informe en Power BI Service, integración en este sitio (Flask en Render), informe técnico y video de resultados.</p>
+                <p><strong>Evidencias:</strong> este sitio, el dashboard integrado y el <a href="{{ c.ENLACES.repositorio }}" target="_blank" rel="noopener">repositorio</a>.</p>
+            </li>
+        </ol>
+
+        <div class="content-narrow">
+            <h2 id="cronograma" class="h2">Cronograma</h2>
+            <p>El proyecto avanzó con entregas semanales. La tabla relaciona cada periodo con su fase de CRISP-DM y su hito de entrega.</p>
+        </div>
+        <div class="timeline">
+            <div class="tl-item">
+                <span class="tl-date">23/10 – 29/10/2026</span>
+                <div><span class="tl-phase">Fase 1 · Comprensión del negocio</span><h3>Planeación de la ciudad inteligente</h3><p>Distribución de NEOGRID en 7 tableros y 6 componentes, asignación del componente Agro y render 3D.</p></div>
+            </div>
+            <div class="tl-item">
+                <span class="tl-date">30/10/2026</span>
+                <div><span class="tl-phase">Fase 2 · Hito</span><h3>Primer avance de la maqueta</h3><p>Entrega de las piezas físicas: tableros de madera con laminado superior impreso como mapa.</p></div>
+            </div>
+            <div class="tl-item">
+                <span class="tl-date">31/10 – 06/11/2026</span>
+                <div><span class="tl-phase">Fase 2 · Comprensión de los datos</span><h3>Maqueta completa y sensores funcionando</h3><p>Entrega del 6 de noviembre: maqueta terminada con todos los sensores conectados y tomando lecturas.</p></div>
+            </div>
+            <div class="tl-item">
+                <span class="tl-date">07/11 – 11/11/2026</span>
+                <div><span class="tl-phase">Fase 3 · Preparación de los datos</span><h3>Modelo relacional, simulación, DW y ETL</h3><p>Entrega del informe R2-A8 el 11 de noviembre (MER, millón de mediciones, esquema estrella y paquete SSIS).</p></div>
+            </div>
+            <div class="tl-item">
+                <span class="tl-date">12/11 – 13/11/2026</span>
+                <div><span class="tl-phase">Fases 4 y 5 · Modelado y evaluación</span><h3>Dashboard de Power BI y análisis</h3><p>Avance del 13 de noviembre: modelo semántico, indicadores, análisis, conocimientos, validación SQL y decisiones.</p></div>
+            </div>
+            <div class="tl-item tl-final">
+                <span class="tl-date">14/11 – 20/11/2026</span>
+                <div><span class="tl-phase">Fase 6 · Despliegue</span><h3>Sitio web, dashboard publicado, informe y video</h3><p>Entrega final el 20 de noviembre: sitio publicado con el dashboard integrado, informe técnico en PDF y video de resultados.</p></div>
+            </div>
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="iteracion" class="h2">Iteraciones entre fases</h2>
+            <p>CRISP-DM es cíclico, y el proyecto tuvo dos regresos documentados:</p>
+            <ul class="check-list">
+                <li><strong>De la evaluación a la preparación de datos.</strong> Al conciliar los conteos se encontraron 20 filas de prueba fuera del periodo simulado (11 mediciones y 6 eventos del 11/11/2026, y 3 mediciones del 12/11/2026 cargadas por el script de prueba de rechazos). Se excluyeron con un filtro en Power Query, y el análisis quedó con 1.025.573 filas.</li>
+                <li><strong>De la evaluación al modelado.</strong> La primera lectura de la matriz multivariada sugería que la Parcela 2 tenía más episodios secos. El recálculo con histéresis mostró que ambas parcelas tienen casi los mismos episodios y que la diferencia está en su duración, lo que cambió el indicador propuesto para la decisión D2.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}

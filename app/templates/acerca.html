@@ -1,14 +1,47 @@
 {% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
 {% block content %}
-<section class="page-hero">
-    <div class="container"><span class="eyebrow">NEOGRID · AGROTECH</span><h1>Acerca de AgroSmart</h1><p>Un módulo académico que explora la integración entre IoT, datos y analítica aplicada al contexto agropecuario.</p></div>
-</section>
+{{ ui.page_hero('NEOGRID · AGROTECH', 'Acerca de AgroSmart', 'Un módulo académico que explora la integración entre IoT, datos y analítica aplicada al contexto agropecuario.') }}
+
 <section class="section section-light">
     <div class="container content-narrow">
         <h2>Sobre la iniciativa</h2>
-        <p>AgroSmart forma parte de NEOGRID, una maqueta académica de ciudad inteligente. Su alcance comprende el monitoreo ambiental y del sustrato, el registro de eventos, el almacenamiento de información y el análisis de datos.</p>
+        <p>AgroSmart forma parte de NEOGRID, una maqueta académica de ciudad inteligente construida por los estudiantes de Big Data del programa de {{ c.IDENTIFICACION.programa }} de la {{ c.IDENTIFICACION.institucion }}, {{ c.IDENTIFICACION.sede }}. Su alcance comprende el monitoreo ambiental y del sustrato, el registro de eventos, el almacenamiento de información y el análisis de datos.</p>
+
+        <h2>Equipo</h2>
+        <div class="team">
+            {% for p in c.IDENTIFICACION.integrantes %}
+            <div class="person"><span class="person-mark">{{ p[0] }}</span><div><strong>{{ p }}</strong><small>Integrante del proyecto</small></div></div>
+            {% endfor %}
+            <div class="person"><span class="person-mark person-mark-alt">{{ c.IDENTIFICACION.gestor[0] }}</span><div><strong>{{ c.IDENTIFICACION.gestor }}</strong><small>Gestor del conocimiento · Big Data</small></div></div>
+        </div>
+
         <h2>Alcance y limitaciones</h2>
-        <p>Las lecturas de los sensores capacitivos se manejan como valores ADC de referencia y no como mediciones calibradas de contenido volumétrico de agua. El FC-37 se utiliza para detectar presencia de agua, no para cuantificar precipitación. Las clasificaciones y umbrales son reglas operativas definidas para el prototipo.</p>
+        <p>Las lecturas de los sensores capacitivos se manejan como valores ADC de referencia y no como mediciones calibradas de contenido volumétrico de agua. El FC-37 detecta la presencia de agua, pero no cuantifica la precipitación. Las clasificaciones y los umbrales son reglas operativas definidas para el prototipo.</p>
+
+        <h2>Preguntas frecuentes</h2>
+        <div class="faq">
+            <details>
+                <summary>¿Los datos del dashboard son reales?</summary>
+                <p>No. Son 999.992 mediciones simuladas en SQL Server con reglas basadas en los rangos de operación de los sensores, entre el 1 y el 4 de noviembre de 2026. Todas están marcadas con origen SIMULADO. La conexión en vivo con el ESP32 es una fase posterior.</p>
+            </details>
+            <details>
+                <summary>¿Por qué la humedad del sustrato está en ADC y no en porcentaje?</summary>
+                <p>El sensor capacitivo entrega un voltaje que el ESP32 convierte en un valor digital (ADC). Convertirlo en contenido de agua requiere calibrarlo con el sustrato real. En este sensor, un valor más alto indica un sustrato más seco.</p>
+            </details>
+            <details>
+                <summary>¿Por qué hay tantas alertas de humedad del sustrato?</summary>
+                <p>La regla actual emite una alerta cada vez que la lectura cruza 3.300 ADC. El ruido hace que la lectura suba y baje alrededor del umbral, así que un mismo episodio genera muchas alertas. La decisión D1 propone una regla con histéresis.</p>
+            </details>
+            <details>
+                <summary>¿Cómo se interactúa con el dashboard?</summary>
+                <p>En la página <a href="{{ url_for('analytics.dashboard') }}">Dashboard de Power BI</a> se pueden usar las segmentaciones, hacer clic en los gráficos para filtrar los demás y cambiar de página con las pestañas del informe.</p>
+            </details>
+            <details>
+                <summary>¿Dónde está el código del sitio?</summary>
+                <p>En el <a href="{{ c.ENLACES.repositorio }}" target="_blank" rel="noopener">repositorio de GitHub</a>. Los textos y las cifras del sitio están centralizados en <code>app/content.py</code>.</p>
+            </details>
+        </div>
     </div>
 </section>
 {% endblock %}

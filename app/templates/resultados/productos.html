@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% block content %}
+{{ ui.page_hero('RESULTADOS', 'Productos y resultados', 'Productos esperados del PGC, lo que se alcanzó y las evidencias verificables del funcionamiento.') }}
+
+<section class="section section-light">
+    <div class="container">
+        <div class="content-narrow">
+            {{ ui.local_nav([('productos', 'Esperados y alcanzados'), ('evidencias', 'Evidencias de funcionamiento')]) }}
+            <h2 id="productos" class="h2">Productos esperados y alcanzados</h2>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Producto esperado</th><th>Producto alcanzado</th><th>Evidencia verificable</th><th>Estado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Prototipo físico del módulo</td>
+                    <td>Tablero AgroSmart de 35 × 50 cm con 5 sensores, 1 actuador y 1 ESP32, integrado a la maqueta de NEOGRID.</td>
+                    <td><a href="#evidencias">Fotos del tablero y de la maqueta</a></td>
+                    <td>{{ ui.status('ok', 'Alcanzado') }}</td>
+                </tr>
+                <tr>
+                    <td>Base de datos relacional</td>
+                    <td>AgroSmartDB en SQL Server con 8 entidades, llaves, restricciones y datos de referencia.</td>
+                    <td><a href="{{ url_for('project.data') }}#relacional">MER y tablas en SSMS</a></td>
+                    <td>{{ ui.status('ok', 'Alcanzado') }}</td>
+                </tr>
+                <tr>
+                    <td>Conjunto de más de un millón de mediciones</td>
+                    <td>1.000.003 mediciones (999.992 simuladas en 142.856 ciclos) y 25.587 eventos.</td>
+                    <td><a href="{{ url_for('project.data') }}#simulacion">Consulta de validación del generador</a></td>
+                    <td>{{ ui.status('ok', 'Alcanzado') }}</td>
+                </tr>
+                <tr>
+                    <td>Data Warehouse</td>
+                    <td>AgroSmart DW en estrella, con 1 tabla de hechos, 8 dimensiones y 1.025.593 filas de hechos.</td>
+                    <td><a href="{{ url_for('project.data') }}#multidimensional">Diagrama estrella</a></td>
+                    <td>{{ ui.status('ok', 'Alcanzado') }}</td>
+                </tr>
+                <tr>
+                    <td>Proceso ETL</td>
+                    <td>Paquete SSIS ETL_AgroSmart.dtsx con 4 contenedores, control de rechazos, prevención de duplicados y cuadre = 1.</td>
+                    <td><a href="{{ url_for('project.data') }}#etl">Ejecuciones y conteos</a></td>
+                    <td>{{ ui.status('ok', 'Alcanzado') }}</td>
+                </tr>
+                <tr>
+                    <td>Dashboard de análisis</td>
+                    <td>Informe de Power BI con 5 páginas, 8 indicadores, 3 análisis univariados, 3 bivariados, 1 multivariado y segmentaciones.</td>
+                    <td><a href="{{ url_for('analytics.dashboard') }}">Dashboard insertado y capturas</a></td>
+                    <td>{{ ui.status('ok', 'Alcanzado') }}</td>
+                </tr>
+                <tr>
+                    <td>Conocimiento evidente y decisiones</td>
+                    <td>5 conocimientos documentados con 8 elementos cada uno, validación en SQL y 2 decisiones sustentadas.</td>
+                    <td><a href="{{ url_for('analytics.knowledge') }}">Conocimientos</a> y <a href="{{ url_for('analytics.decisions') }}">decisiones</a></td>
+                    <td>{{ ui.status('ok', 'Alcanzado') }}</td>
+                </tr>
+                <tr>
+                    <td>Desarrollo web</td>
+                    <td>Este sitio en Flask, publicado en Render, con el PGC completo y el dashboard integrado.</td>
+                    <td><a href="{{ c.ENLACES.sitio }}" target="_blank" rel="noopener">URL del sitio</a> y <a href="{{ c.ENLACES.repositorio }}" target="_blank" rel="noopener">repositorio</a></td>
+                    <td>{{ ui.status('ok', 'Alcanzado') }}</td>
+                </tr>
+                <tr>
+                    <td>Documento síntesis del PGC</td>
+                    <td>Informe R2-A8 (MER, ETL y DW; 144 páginas), entregado el 11/11/2026, e informe técnico del dashboard en APA 7 para la entrega final.</td>
+                    <td>Informes en PDF</td>
+                    <td>{{ ui.status('ok', 'Alcanzado') }}</td>
+                </tr>
+                <tr>
+                    <td>Producción de contenido digital</td>
+                    <td>Video de resultados que recorre el sitio y el dashboard.</td>
+                    <td>Entrega final del 20/11/2026</td>
+                    <td>{{ ui.status('pending', 'En preparación') }}</td>
+                </tr>
+                <tr>
+                    <td>Lecturas en vivo desde el ESP32</td>
+                    <td>Arquitectura diseñada (Wi-Fi → API → AgroSmartDB); no hace parte de esta entrega.</td>
+                    <td><a href="{{ url_for('monitoring.dashboard') }}">Monitoreo</a></td>
+                    <td>{{ ui.status('next', 'Fase posterior') }}</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="evidencias" class="h2">Evidencias de funcionamiento</h2>
+            <p>Imágenes tomadas de las entregas del proyecto. Haga clic en una imagen para abrirla en tamaño completo.</p>
+        </div>
+        <h3 class="gallery-title">Prototipo y ciudad</h3>
+        <div class="gallery">
+            {{ ui.figure('agro-tablero.jpg', 'Tablero AgroSmart con sensores capacitivos, DHT22, FC-37 y establo con compuerta.') }}
+            {{ ui.figure('neogrid-maqueta.jpg', 'Maqueta de NEOGRID armada; el tablero agro está en la esquina inferior izquierda.') }}
+            {{ ui.figure('neogrid-plano-vista.webp', 'Vista superior del mapa de NEOGRID con la ubicación de cada componente.') }}
+            {{ ui.figure('neogrid-plano-tableros.webp', 'Plano de los 7 tableros con medidas, uniones y conectores de 5 V.') }}
+        </div>
+        <h3 class="gallery-title">Datos</h3>
+        <div class="gallery">
+            {{ ui.figure('ssms-tablas.webp', 'Base AgroSmartDB y sus tablas en SQL Server Management Studio.') }}
+            {{ ui.figure('simulacion-generador.webp', 'Resultado del generador masivo de mediciones.') }}
+            {{ ui.figure('etl-conteos.webp', 'Conteos y cuadre de la carga ETL.') }}
+            {{ ui.figure('pbi-conexion.webp', 'Conexión de Power BI Desktop al servidor y a la base AgroSmart DW en modo Importar.') }}
+        </div>
+        <h3 class="gallery-title">Análisis</h3>
+        <div class="gallery">
+            {{ ui.figure('pbi-resumen.webp', 'Página de resumen del dashboard.') }}
+            {{ ui.figure('pbi-multivariado.webp', 'Matriz multivariada de alertas.') }}
+            {{ ui.figure('pbi-validacion-sql.webp', 'Reproducción de la matriz en SQL Server.') }}
+        </div>
+    </div>
+</section>
+{% endblock %}

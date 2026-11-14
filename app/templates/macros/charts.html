@@ -1,0 +1,191 @@
+{#
+  Gráficos del sitio, generados en el servidor como HTML/SVG a partir de los
+  valores verificados de app/content.py. No dependen de librerías externas.
+  Paleta: serie 1 azul #2a78d6, serie 2 naranja #eb6834 (validada para daltonismo).
+#}
+
+{# ---------- Barras horizontales (una serie) ---------- #}
+{% macro hbars(items, unit='', decimals=0, label_desc='Gráfico de barras') -%}
+{% set ns = namespace(max=0) %}
+{% for it in items %}{% if it.valor > ns.max %}{% set ns.max = it.valor %}{% endif %}{% endfor %}
+<div class="hbar-chart" role="img" aria-label="{{ label_desc }}">
+    {% for it in items %}
+    {% set w = (it.valor / ns.max * 100) if ns.max else 0 %}
+    <div class="hbar-row" title="{{ it.label }}: {{ it.valor | miles(decimals) }}{{ ' ' ~ unit if unit }}{% if it.pct %} ({{ it.pct }}){% endif %}{% if it.detalle %} · {{ it.detalle }}{% endif %}">
+        <span class="hbar-label">{{ it.label }}</span>
+        <span class="hbar-track"><span class="hbar-fill" style="width: {{ '%.2f' | format(w) }}%"></span></span>
+        <span class="hbar-value">{{ it.valor | miles(decimals) }}{{ ' ' ~ unit if unit }}{% if it.pct %} <small>{{ it.pct }}</small>{% endif %}</span>
+    </div>
+    {% endfor %}
+</div>
+{%- endmacro %}
+
+{# ---------- Columnas agrupadas (1 o 2 series) ---------- #}
+{% macro columns(data, ticks, decimals=0, unit='', label_desc='Gráfico de columnas', suffix='') -%}
+{% set W, H, ml, mr, mt, mb = 640, 300, 64, 12, 26, 54 %}
+{% set pw, ph = W - ml - mr, H - mt - mb %}
+{% set ymax = ticks[-1] %}
+{% set ng = data.grupos | length %}
+{% set ns_series = data.series | length %}
+{% set gw = pw / ng %}
+{% set bw = 24 %}
+{% set gap = 2 %}
+{% set cluster = ns_series * bw + (ns_series - 1) * gap %}
+<figure class="chart">
+    {% if ns_series > 1 %}
+    <div class="chart-legend">
+        {% for s in data.series %}<span><i class="swatch swatch-{{ loop.index }}"></i>{{ s.nombre }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    <svg viewBox="0 0 {{ W }} {{ H }}" role="img" aria-label="{{ label_desc }}" class="chart-svg">
+        {% for t in ticks %}
+        {% set y = mt + ph - (t / ymax * ph) %}
+        <line x1="{{ ml }}" x2="{{ W - mr }}" y1="{{ y }}" y2="{{ y }}" class="grid"/>
+        <text x="{{ ml - 8 }}" y="{{ y + 4 }}" class="tick" text-anchor="end">{{ t | miles }}{{ suffix }}</text>
+        {% endfor %}
+        {% for g in data.grupos %}
+            {% set gi = loop.index0 %}
+            {% set x0 = ml + gi * gw + (gw - cluster) / 2 %}
+            {% for s in data.series %}
+                {% set v = s.valores[gi] %}
+                {% set h = (v / ymax * ph) %}
+                {% set x = x0 + loop.index0 * (bw + gap) %}
+                {% set y = mt + ph - h %}
+                {% set r = 4 if h > 4 else h %}
+                <g class="bar-g">
+                    <title>{{ g | replace('|', ' ') }} · {{ s.nombre }}: {{ v | miles(decimals) }}{{ suffix }}{{ ' ' ~ unit if unit }}</title>
+                    {% if h > 0 %}
+                    <path class="bar bar-{{ loop.index }}" d="M{{ x }},{{ mt + ph }} L{{ x }},{{ y + r }} Q{{ x }},{{ y }} {{ x + r }},{{ y }} L{{ x + bw - r }},{{ y }} Q{{ x + bw }},{{ y }} {{ x + bw }},{{ y + r }} L{{ x + bw }},{{ mt + ph }} Z"/>
+                    {% endif %}
+                    {% if ns_series == 1 %}
+                    <text x="{{ x + bw / 2 }}" y="{{ y - 6 }}" class="value" text-anchor="middle">{{ v | miles(decimals) }}{{ suffix }}</text>
+                    {% elif loop.first %}
+                    <text x="{{ x + bw - 1 }}" y="{{ y - 6 }}" class="value" text-anchor="end">{{ v | miles(decimals) }}{{ suffix }}</text>
+                    {% else %}
+                    <text x="{{ x + 3 }}" y="{{ y - 6 }}" class="value" text-anchor="start">{{ v | miles(decimals) }}{{ suffix }}</text>
+                    {% endif %}
+                </g>
+            {% endfor %}
+            {% set parts = g.split('|') %}
+            {% for p in parts %}
+            <text x="{{ ml + gi * gw + gw / 2 }}" y="{{ mt + ph + 20 + loop.index0 * 15 }}" class="cat" text-anchor="middle">{{ p }}</text>
+            {% endfor %}
+        {% endfor %}
+        <line x1="{{ ml }}" x2="{{ W - mr }}" y1="{{ mt + ph }}" y2="{{ mt + ph }}" class="axis"/>
+    </svg>
+    {% if unit %}<figcaption class="chart-unit">Unidad: {{ unit }}</figcaption>{% endif %}
+</figure>
+{%- endmacro %}
+
+{# ---------- Franja de puntos sobre un eje (estadísticos, extremos) ---------- #}
+{% macro strip(points, lo, hi, ticks, unit='', threshold=None, threshold_label='', label_desc='Gráfico de puntos') -%}
+{% set W, H, ml, mr = 640, 150, 24, 24 %}
+{% set pw = W - ml - mr %}
+{% set yaxis = 78 %}
+<figure class="chart">
+<svg viewBox="0 0 {{ W }} {{ H }}" role="img" aria-label="{{ label_desc }}" class="chart-svg">
+    <line x1="{{ ml }}" x2="{{ W - mr }}" y1="{{ yaxis }}" y2="{{ yaxis }}" class="axis"/>
+    {% for t in ticks %}
+        {% set x = ml + (t - lo) / (hi - lo) * pw %}
+        <line x1="{{ x }}" x2="{{ x }}" y1="{{ yaxis - 4 }}" y2="{{ yaxis + 4 }}" class="axis"/>
+        <text x="{{ x }}" y="{{ H - 6 }}" class="tick" text-anchor="middle">{{ t | miles }}{{ unit }}</text>
+    {% endfor %}
+    {% if threshold is not none %}
+        {% set tx = ml + (threshold - lo) / (hi - lo) * pw %}
+        <line x1="{{ tx }}" x2="{{ tx }}" y1="14" y2="{{ yaxis + 10 }}" class="threshold"/>
+        <text x="{{ tx - 6 }}" y="12" class="threshold-label" text-anchor="end">{{ threshold_label }}</text>
+    {% endif %}
+    {% for p in points %}
+        {% set x = ml + (p.valor - lo) / (hi - lo) * pw %}
+        {% set above = p.pos == 'above' %}
+        <g class="dot-g">
+            <title>{{ p.label }}: {{ p.valor | miles(2) }}{{ unit }}</title>
+            <circle cx="{{ x }}" cy="{{ yaxis }}" r="6" class="dot dot-{{ p.serie or 1 }}"/>
+            <text x="{{ x }}" y="{{ 34 if above else 108 }}" class="cat" text-anchor="{{ p.anchor or 'middle' }}">{{ p.label }}</text>
+            <text x="{{ x }}" y="{{ 50 if above else 124 }}" class="value" text-anchor="{{ p.anchor or 'middle' }}">{{ p.valor | miles(2) }}{{ unit }}</text>
+        </g>
+    {% endfor %}
+</svg>
+</figure>
+{%- endmacro %}
+
+{# ---------- Matriz con color secuencial (M1) ---------- #}
+{% macro heatmap(m) -%}
+{% set ramp = ['#f3f7fd','#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987e5','#2a78d6','#256abf','#1c5cab','#184f95','#104281'] %}
+<div class="table-wrap">
+<table class="data-table heatmap">
+    <caption>Alertas y tasa por 1.000 mediciones por ubicación, tipo de dispositivo y franja del día · {{ c.PERIODO_CORTO }}</caption>
+    <thead>
+        <tr><th scope="col">Ubicación</th><th scope="col">Tipo</th>
+        {% for col in m.columnas %}<th scope="col">{{ col }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+        {% for f in m.filas %}
+        <tr>
+            <th scope="row">{{ f.ubicacion }}</th><td>{{ f.tipo }}</td>
+            {% for alertas, tasa in f.celdas %}
+                {% set is_total = loop.last %}
+                {% set rate = tasa.replace('.', '').replace(',', '.') | float %}
+                {% set idx = ((rate / 250 * 12) | round(0, 'ceil') | int) if rate > 0 else 0 %}
+                {% set idx = 12 if idx > 12 else idx %}
+                <td class="heat{% if is_total %} heat-total{% endif %}{% if not is_total and idx >= 7 %} heat-dark{% endif %}" {% if not is_total %}style="background: {{ ramp[idx] }}"{% endif %} title="{{ f.ubicacion }} · {{ m.columnas[loop.index0] }}: {{ alertas | miles }} alertas, {{ tasa }} por 1.000 mediciones">
+                    <strong>{{ alertas | miles }}</strong><small>{{ tasa }}</small>
+                </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr><th scope="row">Total</th><td>SENSOR</td>
+        {% for alertas, tasa in m.total %}<td class="heat heat-total"><strong>{{ alertas | miles }}</strong><small>{{ tasa }}</small></td>{% endfor %}</tr>
+    </tfoot>
+</table>
+</div>
+<div class="heat-legend" aria-hidden="true">
+    <span>Tasa por 1.000 mediciones:</span>
+    <span class="heat-scale">{% for col in ramp %}<i style="background: {{ col }}"></i>{% endfor %}</span>
+    <span>0</span><span>≥ 250</span>
+</div>
+{%- endmacro %}
+
+{# ---------- Selector de gráfico por conocimiento o decisión ---------- #}
+{% macro by_key(key) -%}
+{% if key == 'c1' %}
+    {{ strip([
+        {'label': 'Mínima', 'valor': 9.53, 'pos': 'below'},
+        {'label': 'Percentil 1', 'valor': 10.74, 'pos': 'above'},
+        {'label': 'Mediana', 'valor': 16.75, 'pos': 'below', 'anchor': 'end'},
+        {'label': 'Media', 'valor': 17.07, 'pos': 'above', 'anchor': 'start'},
+        {'label': 'Percentil 99', 'valor': 23.98, 'pos': 'below', 'anchor': 'end'},
+        {'label': 'Máxima', 'valor': 24.50, 'pos': 'above', 'anchor': 'end'},
+    ], 8, 26, [8, 10, 12, 14, 16, 18, 20, 22, 24, 26], ' °C', 25, 'Umbral de alerta: 25 °C',
+    'Estadísticos de la temperatura frente al umbral de 25 °C') }}
+    <p class="chart-title">Temperatura promedio por franja del día (°C)</p>
+    {{ hbars(c.TEMP_FRANJA, '°C', 2, 'Temperatura promedio por franja del día') }}
+{% elif key == 'c2' %}
+    {{ hbars(c.EVENTOS_POR_TIPO, 'eventos', 0, 'Eventos por tipo, cantidad y porcentaje') }}
+{% elif key == 'c3' %}
+    <p class="chart-title">Temperatura promedio por hora: mínimo y máximo del día (°C)</p>
+    {{ strip([
+        {'label': 'Mínimo a las 2 h', 'valor': 12.14, 'pos': 'above', 'anchor': 'start'},
+        {'label': 'Máximo a las 15 h', 'valor': 22.56, 'pos': 'above', 'anchor': 'end', 'serie': 2},
+    ], 10, 25, [10, 12, 14, 16, 18, 20, 22, 24], ' °C', None, '', 'Rango diario de la temperatura promedio por hora') }}
+    <p class="chart-title">Humedad relativa promedio por hora: mínimo y máximo del día (%)</p>
+    {{ strip([
+        {'label': 'Mínimo a las 18 h', 'valor': 68.42, 'pos': 'above', 'anchor': 'start', 'serie': 2},
+        {'label': 'Máximo a las 2 h', 'valor': 84.10, 'pos': 'above', 'anchor': 'end'},
+    ], 60, 90, [60, 65, 70, 75, 80, 85, 90], ' %', None, '', 'Rango diario de la humedad relativa promedio por hora') }}
+    <div class="stat-row">
+        <div class="stat"><span>r entre promedios horarios</span><strong>−0,99</strong><small>24 grupos</small></div>
+        <div class="stat"><span>r entre lecturas del mismo ciclo</span><strong>−0,84</strong><small>n = 142.856 pares</small></div>
+    </div>
+{% elif key == 'c4' %}
+    {{ columns(c.ILUMINACION_LLUVIA, [0, 200, 400, 600, 800, 1000], 2, 'lux', 'Iluminación diurna con y sin lluvia') }}
+{% elif key == 'c5' %}
+    {{ heatmap(c.MATRIZ) }}
+{% elif key == 'd1' %}
+    {{ columns(c.REGLAS_ALERTA, [0, 5000, 10000, 15000, 20000], 0, 'alertas', 'Alertas de sustrato por regla y sensor') }}
+{% elif key == 'd2' %}
+    {{ columns(c.SUSTRATO_UMBRAL, [0, 20, 40, 60, 80], 1, '% de lecturas ≥ 3.300 ADC', '% de lecturas del sustrato iguales o superiores a 3.300 ADC', ' %') }}
+{% endif %}
+{%- endmacro %}

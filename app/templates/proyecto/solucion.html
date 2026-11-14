@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% block content %}
+{{ ui.page_hero('PROYECTO', 'Desarrollo de la solución', 'Descripción del módulo, usuarios, procesos, dispositivos, funcionalidades, arquitectura y tecnologías de AgroSmart.') }}
+
+<section class="section section-light">
+    <div class="container">
+        <div class="content-narrow">
+            {{ ui.local_nav([('modulo', 'Módulo'), ('usuarios', 'Usuarios'), ('procesos', 'Procesos'), ('dispositivos', 'Dispositivos'), ('funcionalidades', 'Funcionalidades'), ('arquitectura', 'Arquitectura'), ('tecnologias', 'Tecnologías')]) }}
+        </div>
+
+        <div class="split" id="modulo">
+            <div>
+                <h2 class="h2">Descripción del módulo</h2>
+                <p>AgroSmart representa una pequeña unidad agropecuaria dentro de NEOGRID. Su tablero de 35 × 50 cm tiene dos parcelas de cultivo con un sensor capacitivo cada una, un sensor ambiental DHT22, una placa FC-37 para detectar lluvia, un sensor de iluminación BH1750 y un establo con una compuerta que abre y cierra un servomotor SG90. Un ESP32 coordina la captura de las lecturas y el accionamiento.</p>
+                <p>Los componentes se distribuyen en cinco ubicaciones lógicas: Parcela 1, Parcela 2, Ambiente general, Acceso del invernadero y Centro de control.</p>
+            </div>
+            {{ ui.figure('agro-tablero.jpg', 'Tablero AgroSmart con los sensores instalados antes de integrarse a la maqueta.') }}
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="usuarios" class="h2">Usuarios</h2>
+            <p>La entidad USUARIO de AgroSmartDB define tres roles. Cada proceso tiene un usuario responsable principal y un usuario puede tener varios procesos a cargo.</p>
+        </div>
+        <div class="feature-grid">
+            <article class="feature-card"><span class="feature-number">ADMINISTRADOR</span><h3>Configura el sistema</h3><p>Mantiene los dispositivos, las ubicaciones, las variables y las asignaciones a cada proceso.</p></article>
+            <article class="feature-card"><span class="feature-number">OPERADOR</span><h3>Atiende la operación</h3><p>Consulta las lecturas y las alertas, y ejecuta acciones como el riego o la apertura de la compuerta.</p></article>
+            <article class="feature-card"><span class="feature-number">SUPERVISOR</span><h3>Evalúa los resultados</h3><p>Revisa los indicadores del dashboard y hace seguimiento a las decisiones de gestión.</p></article>
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="procesos" class="h2">Procesos</h2>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Código</th><th>Proceso</th><th>Propósito</th><th>Dispositivos asignados</th></tr></thead>
+            <tbody>
+                <tr><td>PRO-001</td><td>Monitoreo ambiental</td><td>Seguir la temperatura, la humedad relativa, la iluminación y la presencia de agua.</td><td>FC-37, DHT22, BH1750, ESP32</td></tr>
+                <tr><td>PRO-002</td><td>Monitoreo del sustrato</td><td>Registrar y comparar la humedad de las dos parcelas de referencia.</td><td>Sensor capacitivo 1, sensor capacitivo 2, ESP32</td></tr>
+                <tr><td>PRO-003</td><td>Control de compuerta</td><td>Abrir y cerrar la compuerta del establo según la iluminación registrada.</td><td>BH1750, servomotor SG90, ESP32</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="dispositivos" class="h2">Dispositivos</h2>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Código</th><th>Dispositivo</th><th>Tipo</th><th>Ubicación</th><th>Variables o acción</th></tr></thead>
+            <tbody>
+                <tr><td>DIS-001</td><td>Sensor capacitivo 1</td><td>SENSOR</td><td>Parcela 1</td><td>VAR-003 Humedad del sustrato (ADC)</td></tr>
+                <tr><td>DIS-002</td><td>Sensor capacitivo 2</td><td>SENSOR</td><td>Parcela 2</td><td>VAR-003 Humedad del sustrato (ADC)</td></tr>
+                <tr><td>DIS-003</td><td>Sensor de lluvia FC-37</td><td>SENSOR</td><td>Ambiente general</td><td>VAR-005 Lluvia analógica (ADC) y VAR-006 Lluvia digital (0 = agua detectada)</td></tr>
+                <tr><td>DIS-004</td><td>Sensor ambiental DHT22</td><td>SENSOR</td><td>Ambiente general</td><td>VAR-001 Temperatura (°C) y VAR-002 Humedad relativa (%)</td></tr>
+                <tr><td>DIS-005</td><td>Sensor de iluminación BH1750</td><td>SENSOR</td><td>Acceso del invernadero</td><td>VAR-004 Iluminación (lux)</td></tr>
+                <tr><td>DIS-006</td><td>Servomotor SG90</td><td>ACTUADOR</td><td>Acceso del invernadero</td><td>Abre y cierra la compuerta (eventos PUERTA_ABIERTA y PUERTA_CERRADA)</td></tr>
+                <tr><td>DIS-007</td><td>Controlador ESP32</td><td>CONTROLADOR</td><td>Centro de control</td><td>Coordina la captura y el accionamiento; no genera mediciones</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="funcionalidades" class="h2">Funcionalidades</h2>
+            <ul class="check-list">
+                <li><strong>Captura periódica:</strong> cada ciclo de captura registra las siete lecturas del módulo. En el escenario simulado, un ciclo cada 2 segundos.</li>
+                <li><strong>Clasificación del sustrato:</strong> MOJADO (&lt; 2.500 ADC), HÚMEDO (2.500–2.600), HUMEDAD INTERMEDIA (2.600–2.800) y SECO (≥ 2.800).</li>
+                <li><strong>Eventos y alertas:</strong> alerta de sustrato al cruzar 3.300 ADC, de temperatura al cruzar 25 °C y de iluminación al bajar de 150 lux entre las 7 y las 17 h. También se registran la apertura y el cierre de la compuerta y la detección de lluvia.</li>
+                <li><strong>Control de compuerta:</strong> el SG90 abre y cierra el acceso del establo según la iluminación.</li>
+                <li><strong>Almacenamiento y trazabilidad:</strong> AgroSmartDB conserva cada medición con su ciclo de captura, dispositivo, variable, estado y origen (REAL o SIMULADO).</li>
+                <li><strong>Análisis:</strong> el Data Warehouse y el dashboard de Power BI permiten filtrar por fecha, franja del día, ubicación, tipo de dispositivo y concepto.</li>
+                <li><strong>Divulgación:</strong> este sitio documenta el proyecto y aloja el dashboard interactivo.</li>
+            </ul>
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="arquitectura" class="h2">Arquitectura</h2>
+            <p>La solución se organiza en capas. Las líneas punteadas indican la conexión en vivo prevista para una fase posterior.</p>
+        </div>
+        <div class="arch" role="img" aria-label="Arquitectura de AgroSmart por capas: dispositivos, datos operacionales, ETL, Data Warehouse, analítica y publicación">
+            <div class="arch-layer">
+                <span class="arch-title">1 · Dispositivos</span>
+                <div class="arch-box">Sensores capacitivos ×2 · DHT22 · BH1750 · FC-37</div>
+                <div class="arch-box">Servomotor SG90</div>
+                <div class="arch-box arch-strong">ESP32</div>
+            </div>
+            <div class="arch-arrow"><span>Wi-Fi + API (prevista)</span></div>
+            <div class="arch-layer">
+                <span class="arch-title">2 · Datos operacionales</span>
+                <div class="arch-box arch-strong">AgroSmartDB<small>SQL Server 2025 · 8 entidades</small></div>
+                <div class="arch-box">Generador de simulación<small>1.000.003 mediciones · 25.587 eventos</small></div>
+            </div>
+            <div class="arch-arrow arch-arrow-solid"><span>ETL_AgroSmart.dtsx</span></div>
+            <div class="arch-layer">
+                <span class="arch-title">3 · Almacén analítico</span>
+                <div class="arch-box arch-strong">AgroSmart DW<small>Estrella: 1 hecho + 8 dimensiones</small></div>
+                <div class="arch-box">Esquema etl<small>CONTROL_CARGA · REGISTRO_RECHAZADO</small></div>
+            </div>
+            <div class="arch-arrow arch-arrow-solid"><span>Importar</span></div>
+            <div class="arch-layer">
+                <span class="arch-title">4 · Analítica y publicación</span>
+                <div class="arch-box arch-strong">Power BI Desktop<small>Modelo semántico y medidas DAX</small></div>
+                <div class="arch-box">Power BI Service<small>Informe publicado e insertado</small></div>
+                <div class="arch-box">Sitio web Flask<small>Render · GitHub</small></div>
+            </div>
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="tecnologias" class="h2">Tecnologías utilizadas</h2>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Capa</th><th>Tecnología</th><th>Uso en AgroSmart</th></tr></thead>
+            <tbody>
+                <tr><td>Hardware</td><td>ESP32, sensores capacitivos v1.2, DHT22, BH1750, FC-37, SG90</td><td>Prototipo físico del módulo</td></tr>
+                <tr><td>Base de datos</td><td>SQL Server 2025, SQL Server Management Studio</td><td>AgroSmartDB, generador de simulación, AgroSmart DW y consultas de validación</td></tr>
+                <tr><td>Integración</td><td>SQL Server Integration Services (SSIS)</td><td>Paquete ETL_AgroSmart.dtsx</td></tr>
+                <tr><td>Analítica</td><td>Power BI Desktop y Power BI Service, Power Query (M), DAX</td><td>Modelo semántico, medidas, dashboard y publicación</td></tr>
+                <tr><td>Web</td><td>Python, Flask, Gunicorn, HTML, CSS y JavaScript</td><td>Este sitio</td></tr>
+                <tr><td>Despliegue y versiones</td><td>Render, GitHub (ramas <code>develop</code> y <code>main</code>)</td><td>Publicación del sitio y control de versiones</td></tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

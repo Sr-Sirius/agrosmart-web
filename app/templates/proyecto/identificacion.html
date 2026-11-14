@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% block content %}
+{{ ui.page_hero('PROYECTO DE GESTIÓN DEL CONOCIMIENTO', 'Identificación, problema y objetivos', 'Datos generales del PGC, necesidad que aborda AgroSmart, población beneficiaria y objetivos del proyecto.') }}
+
+<section class="section section-light">
+    <div class="container content-narrow">
+        {{ ui.local_nav([('identificacion', 'Identificación'), ('problema', 'Planteamiento del problema'), ('justificacion', 'Justificación'), ('objetivos', 'Objetivos')]) }}
+
+        <h2 id="identificacion">Identificación</h2>
+        <div class="table-wrap">
+        <table class="data-table id-table">
+            <tbody>
+                <tr><th scope="row">Título del proyecto</th><td>{{ c.IDENTIFICACION.titulo }}</td></tr>
+                <tr><th scope="row">Programa académico</th><td>{{ c.IDENTIFICACION.programa }}</td></tr>
+                <tr><th scope="row">Institución y sede</th><td>{{ c.IDENTIFICACION.institucion }}, {{ c.IDENTIFICACION.sede }}</td></tr>
+                <tr><th scope="row">Ciclo de formación</th><td>{{ c.IDENTIFICACION.ciclo }}</td></tr>
+                <tr><th scope="row">Tipo de proyecto</th><td>{{ c.IDENTIFICACION.tipo }}</td></tr>
+                <tr><th scope="row">Integrantes</th><td>{{ c.IDENTIFICACION.integrantes | join(' y ') }}</td></tr>
+                <tr><th scope="row">Gestor del conocimiento</th><td>{{ c.IDENTIFICACION.gestor }}</td></tr>
+                <tr><th scope="row">Núcleo temático</th><td>{{ c.IDENTIFICACION.nucleo }} · Periodo {{ c.IDENTIFICACION.periodo }}</td></tr>
+                <tr><th scope="row">Línea de investigación</th><td>{{ c.IDENTIFICACION.linea }}</td></tr>
+                <tr><th scope="row">Productos esperados</th><td>{{ c.IDENTIFICACION.productos | join(', ') }}</td></tr>
+                <tr><th scope="row">Componente de NEOGRID</th><td>Agro: tablero de 35 × 50 cm dentro de la maqueta de 120 × 100 cm</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="footnote">Según los lineamientos de la Facultad de Ingeniería, el Proyecto Tecnológico aplica conocimientos de ciencias básicas e ingeniería para atender una necesidad mediante un producto de software, un sistema de información o un prototipo (Universidad de Cundinamarca, 2023).</p>
+
+        <h2 id="problema">Planteamiento del problema</h2>
+        <p>La agricultura es el sector que más agua dulce extrae en el mundo: cerca del 70 % de todas las extracciones (FAO, s. f.). En unidades productivas pequeñas, como parcelas o invernaderos, las condiciones que determinan el riego y la ventilación (humedad del sustrato, temperatura, humedad relativa, iluminación y lluvia) suelen revisarse por observación directa y en momentos irregulares. Sin un registro histórico no es posible comparar parcelas, horarios o periodos, y las decisiones dependen de la percepción del operador.</p>
+        <p>Incorporar sensores no resuelve el problema por sí solo. Si las lecturas no se almacenan, no se preparan para el análisis y las reglas de alerta no se evalúan con datos, el sistema puede producir muchas notificaciones sin distinguir cuáles son relevantes. Las revisiones sobre agricultura inteligente coinciden en que el valor de los dispositivos conectados depende de la capacidad de integrar, procesar y analizar los datos que producen (Farooq et al., 2019; Wolfert et al., 2017).</p>
+        <p>Dentro de NEOGRID, el componente Agro debe mostrar cómo una zona agropecuaria de una ciudad inteligente captura sus variables y las convierte en información útil para la gestión. AgroSmart asume ese reto con un prototipo de bajo costo y una cadena de datos completa.</p>
+        <div class="callout">
+            <span class="eyebrow">PREGUNTA PROBLEMA</span>
+            <p>¿Cómo integrar la captura de variables ambientales y del sustrato de un prototipo IoT con un proceso de almacenamiento, preparación y análisis de datos que permita identificar comportamientos verificables y orientar decisiones de gestión en el módulo agropecuario de NEOGRID?</p>
+        </div>
+
+        <h2 id="justificacion">Justificación</h2>
+        <h3>Población beneficiaria</h3>
+        <ul class="check-list">
+            <li><strong>Beneficiarios directos:</strong> la comunidad académica del programa de Ingeniería de Sistemas y Computación de la extensión Chía (estudiantes y gestores del conocimiento), que dispone de un caso de estudio reproducible que recorre la cadena completa de datos: captura, modelo relacional, simulación, Data Warehouse, ETL y análisis.</li>
+            <li><strong>Equipos de NEOGRID:</strong> los demás componentes de la ciudad comparten la infraestructura física y pueden reutilizar el modelo de datos, el proceso ETL y la estructura de documentación.</li>
+            <li><strong>Beneficiarios potenciales:</strong> pequeños productores y operarios de cultivos en invernadero o en parcelas de la provincia de Sabana Centro, para quienes una solución de bajo costo puede facilitar el registro de las condiciones del cultivo y la priorización del riego y la ventilación.</li>
+        </ul>
+        <h3>Pertinencia de la solución</h3>
+        <p>AgroSmart utiliza componentes de bajo costo y amplia disponibilidad. Los sensores capacitivos de humedad del suelo de este tipo han mostrado una relación confiable entre su salida y el contenido de agua cuando se caracterizan para un suelo determinado, lo que los hace adecuados para redes IoT (Placidi et al., 2020). Al mismo tiempo, el análisis de grandes volúmenes de datos en agricultura todavía se encuentra en una etapa temprana y presenta barreras de adopción (Kamilaris et al., 2017), por lo que un prototipo académico que documente todo el proceso aporta un referente práctico.</p>
+        <p>La simulación de más de un millón de mediciones permitió probar el modelo de datos, el ETL y el dashboard con un volumen realista antes de conectar lecturas en vivo. El análisis también produjo un aporte concreto: la validación mostró que la regla de alerta del sustrato genera alertas repetidas (95,14 % de los eventos) y cuantificó una alternativa con histéresis que las reduce en un 61,7 %.</p>
+
+        <h2 id="objetivos">Objetivos</h2>
+        <h3>Objetivo general</h3>
+        <p class="lead-text">Desarrollar AgroSmart, el módulo agropecuario de la ciudad inteligente NEOGRID, integrando un prototipo IoT de monitoreo ambiental y del sustrato con una arquitectura de datos y un dashboard de Power BI que permitan descubrir conocimiento evidente y sustentar decisiones de gestión del módulo.</p>
+        <h3>Objetivos específicos</h3>
+        <ol class="objective-list">
+            <li>Construir el prototipo físico del módulo con un ESP32, dos sensores capacitivos de humedad del sustrato, un DHT22, un BH1750, un FC-37 y un servomotor SG90, integrado al tablero de NEOGRID.</li>
+            <li>Diseñar e implementar la base de datos relacional AgroSmartDB y simular más de un millón de mediciones coherentes con los rangos de operación de los sensores.</li>
+            <li>Construir el Data Warehouse AgroSmart DW con esquema estrella y cargarlo mediante un proceso ETL en SSIS con controles de calidad e integridad.</li>
+            <li>Desarrollar un dashboard en Power BI con indicadores y análisis univariados, bivariados y multivariados que permitan formular conocimientos evidentes y decisiones sustentadas.</li>
+            <li>Publicar un sitio web que documente el PGC e integre el dashboard de forma interactiva.</li>
+        </ol>
+        <p class="footnote">El cumplimiento de cada objetivo se revisa en <a href="{{ url_for('results.conclusions') }}#cumplimiento">Conclusiones</a>.</p>
+    </div>
+</section>
+{% endblock %}

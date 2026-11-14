@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% import 'macros/charts.html' as charts with context %}
+{% block content %}
+{{ ui.page_hero('ANALÍTICA · PREGUNTAR Y MEDIR', 'Preparación del análisis', 'Fuente, periodo, registros, variables y reglas de calidad del dashboard, junto con las preguntas que orientaron cada visualización.') }}
+
+<section class="section section-light">
+    <div class="container">
+        <div class="content-narrow">
+            {{ ui.local_nav([('fuente', 'Fuente y periodo'), ('variables', 'Variables'), ('calidad', 'Reglas de calidad'), ('modelo', 'Modelo semántico'), ('preguntas', 'Preguntas'), ('indicadores', 'Indicadores'), ('analisis', 'Análisis')]) }}
+
+            <h2 id="fuente" class="h2">Fuente, periodo y cantidad de registros</h2>
+            <ul class="check-list">
+                <li><strong>Fuente:</strong> Data Warehouse <code>AgroSmart DW</code> en SQL Server 2025 (servidor local, autenticación de Windows), conectado desde Power BI Desktop en modo Importar.</li>
+                <li><strong>Tablas:</strong> la tabla de hechos FACT_REGISTRO_AGROSMART y sus ocho dimensiones, con solo las columnas necesarias.</li>
+                <li><strong>Periodo analizado:</strong> {{ c.PERIODO }} (3 días y 7,4 horas). Todo el periodo tiene origen SIMULADO.</li>
+            </ul>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <caption>Conciliación entre el Data Warehouse y el conjunto analizado</caption>
+            <thead><tr><th>Conjunto</th><th>Filas</th><th>Mediciones</th><th>Eventos</th></tr></thead>
+            <tbody>
+                <tr><td>AgroSmart DW (total)</td><td>1.025.593</td><td>1.000.006</td><td>25.587</td></tr>
+                <tr><td>Filas de prueba excluidas</td><td>20</td><td>14</td><td>6</td></tr>
+                <tr class="row-strong"><td>Conjunto analizado en Power BI</td><td>1.025.573</td><td>999.992</td><td>25.581</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="content-narrow">
+            <p>Las 20 filas excluidas son pruebas: 11 mediciones y 6 eventos del 11/11/2026 (entre 05:49 y 06:18) y 3 mediciones cargadas el 12/11/2026 por el script de prueba de rechazos. Se excluyeron con un filtro de fecha en Power Query:</p>
+            {{ ui.code(c.FILTRO_M, 'Ver filtro en Power Query (M)') }}
+
+            <h2 id="variables" class="h2">Variables utilizadas</h2>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Código</th><th>Variable</th><th>Unidad</th><th>Dispositivo</th><th>Lecturas</th></tr></thead>
+            <tbody>
+                <tr><td>VAR-001</td><td>Temperatura</td><td>°C</td><td>DHT22</td><td>142.856</td></tr>
+                <tr><td>VAR-002</td><td>Humedad relativa</td><td>%</td><td>DHT22</td><td>142.856</td></tr>
+                <tr><td>VAR-003</td><td>Humedad del sustrato</td><td>ADC</td><td>Capacitivos 1 y 2</td><td>285.712</td></tr>
+                <tr><td>VAR-004</td><td>Iluminación</td><td>lux</td><td>BH1750</td><td>142.856</td></tr>
+                <tr><td>VAR-005</td><td>Lluvia analógica</td><td>ADC</td><td>FC-37</td><td>142.856</td></tr>
+                <tr><td>VAR-006</td><td>Lluvia digital</td><td>0/1 (0 = agua detectada)</td><td>FC-37</td><td>142.856</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="content-narrow">
+            <p>Dimensiones de análisis: fecha, hora y franja del día (madrugada 0–5 h, mañana 6–11 h, tarde 12–17 h, noche 18–23 h), dispositivo y tipo, ubicación, proceso, concepto (variables y 6 tipos de evento), estado y origen.</p>
+
+            <h2 id="calidad" class="h2">Reglas de calidad aplicadas</h2>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Regla</th><th>Verificación</th><th>Resultado</th></tr></thead>
+            <tbody>
+                <tr><td>Completitud</td><td>Mediciones sin valor numérico</td><td>0 nulos</td></tr>
+                <tr><td>Unicidad</td><td>Registros duplicados por origen</td><td>0 duplicados</td></tr>
+                <tr><td>Integridad</td><td>Llaves sin correspondencia en las dimensiones</td><td>0 llaves huérfanas</td></tr>
+                <tr><td>Rango</td><td>Valores fuera del rango de cada sensor</td><td>0 fuera de rango</td></tr>
+                <tr><td>Cadencia</td><td>Ciclos con 7 lecturas y 2 s entre ciclos</td><td>142.856 ciclos completos</td></tr>
+                <tr><td>Periodo</td><td>Filas fuera de la simulación</td><td>20 filas de prueba excluidas</td></tr>
+                <tr><td>Conciliación</td><td>Conteos del DW frente a Power BI</td><td>Cuadre exacto (tabla anterior)</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="split" id="modelo">
+            <div>
+                <h2 class="h2">Modelo semántico en Power BI</h2>
+                <ul class="check-list">
+                    <li>8 relaciones de muchos a uno, con filtro en una sola dirección, desde la tabla de hechos hacia las dimensiones.</li>
+                    <li>DIM_FECHA marcada como tabla de fechas; llaves técnicas ocultas; medidas agrupadas en la tabla <code>_Medidas</code>.</li>
+                    <li>Columna <code>orden_franja</code> para ordenar las franjas, grupo de rangos de 1 unidad para el histograma, tabla <code>CiclosConLluvia</code> y columna <code>condicion_lluvia</code>.</li>
+                </ul>
+                {{ ui.code(c.MEDIDAS_DAX, 'Ver medidas DAX') }}
+                {{ ui.code(c.COLUMNAS_DAX, 'Ver columnas y tabla calculadas (DAX)') }}
+            </div>
+            {{ ui.figure('pbi-modelo.webp', 'Modelo semántico en estrella dentro de Power BI Desktop.') }}
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="preguntas" class="h2">Preguntas orientadoras</h2>
+            <p>Las preguntas se formularon antes de construir las visualizaciones y se relacionan con el problema del módulo: saber si el monitoreo detecta condiciones relevantes y dónde concentrar la atención.</p>
+        </div>
+        <div class="question-grid">
+            {% for p in c.PREGUNTAS %}
+            <div class="question"><span>{{ p.id }}</span><p>{{ p.texto }}</p><small>{{ p.analisis }}</small></div>
+            {% endfor %}
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="indicadores" class="h2">Indicadores generales y denominadores</h2>
+            <p>El dashboard tiene 8 indicadores; la actividad exige al menos 5. Cuando un indicador es una tasa o un porcentaje, se indica su denominador.</p>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Indicador</th><th>Valor</th><th>Cálculo</th><th>Denominador</th></tr></thead>
+            <tbody>
+                {% for i in c.INDICADORES %}
+                <tr><td>{{ i.nombre }}</td><td class="num">{{ i.valor }}{{ ' ' ~ i.unidad if i.unidad and i.unidad not in ['lecturas', 'eventos', 'alertas'] }}</td><td>{{ i.calculo }}</td><td>{{ i.denominador or '—' }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        <div class="content-narrow">
+            <h2 id="analisis" class="h2">Análisis del dashboard</h2>
+            <p>Resumen de los siete análisis exigidos. Cada uno puede explorarse en el <a href="{{ url_for('analytics.dashboard') }}">dashboard interactivo</a>.</p>
+        </div>
+
+        <div class="analysis-grid">
+            <article class="analysis-card">
+                <span class="tag">U1 · Univariado</span>
+                <h3>Distribución de la temperatura (°C)</h3>
+                <p>Histograma en rangos de 1 °C (n = 142.856). La media (17,07 °C) es mayor que la mediana (16,75 °C) y cae en el valle entre los dos modos (13 y 21 °C). Con una distribución bimodal, ninguna de las dos medidas representa una condición típica: conviene describir la temperatura por franja.</p>
+                <p class="ref-use">Ver <a href="{{ url_for('analytics.knowledge') }}#C1">C1</a></p>
+            </article>
+            <article class="analysis-card">
+                <span class="tag">U2 · Univariado</span>
+                <h3>Eventos por tipo</h3>
+                <p>Cantidad absoluta y porcentaje sobre 25.581 eventos. ALERTA_HUMEDAD_SUSTRATO representa el 95,14 % (24.339 eventos).</p>
+                <p class="ref-use">Ver <a href="{{ url_for('analytics.knowledge') }}#C2">C2</a></p>
+            </article>
+            <article class="analysis-card">
+                <span class="tag">U3 · Univariado</span>
+                <h3>Lecturas del sustrato por estado</h3>
+                <p>De 285.712 lecturas, 95,68 % están en SECO, 4,29 % en HUMEDAD_INTERMEDIA, 0,03 % en HÚMEDO y ninguna en MOJADO.</p>
+                {{ charts.hbars(c.SUSTRATO_ESTADO, '', 0, 'Lecturas del sustrato por estado') }}
+            </article>
+            <article class="analysis-card">
+                <span class="tag">B1 · Bivariado</span>
+                <h3>Temperatura y humedad relativa por hora</h3>
+                <p>Promedios por hora en dos líneas. La temperatura va de 12,14 °C (2 h) a 22,56 °C (15 h) y la humedad de 84,10 % (2 h) a 68,42 % (18 h). r = −0,99 entre promedios horarios.</p>
+                <p class="ref-use">Ver <a href="{{ url_for('analytics.knowledge') }}#C3">C3</a></p>
+            </article>
+            <article class="analysis-card">
+                <span class="tag">B2 · Bivariado</span>
+                <h3>Humedad del sustrato por sensor (ADC)</h3>
+                <p>En ambos sensores la media es menor que la mediana, porque la lluvia crea una cola de valores bajos (más húmedos) que arrastra la media hacia abajo. La mediana describe mejor la condición habitual de cada parcela.</p>
+                {{ charts.columns(c.SUSTRATO_SENSORES, [0, 1000, 2000, 3000, 4000], 2, 'ADC', 'Promedio y mediana de humedad del sustrato por sensor') }}
+            </article>
+            <article class="analysis-card">
+                <span class="tag">B3 · Bivariado</span>
+                <h3>Iluminación diurna con y sin lluvia (lux)</h3>
+                <p>De 6 a 17 h, 802,69 lux sin lluvia (n = 56.456) frente a 148,62 lux con lluvia (n = 10.800). La diferencia se mantiene entre 12 y 17 h.</p>
+                <p class="ref-use">Ver <a href="{{ url_for('analytics.knowledge') }}#C4">C4</a></p>
+            </article>
+            <article class="analysis-card analysis-card-wide">
+                <span class="tag">M1 · Multivariado</span>
+                <h3>Alertas por ubicación, tipo de dispositivo y franja del día</h3>
+                <p>Matriz calculada directamente sobre la tabla de hechos para cada combinación de las tres variables. Muestra la cantidad absoluta y la tasa por 1.000 mediciones. El denominador de cada celda son las mediciones de esa ubicación y franja; el de la fila Total incluye todas las mediciones de la franja, también las de Ambiente general.</p>
+                {{ charts.heatmap(c.MATRIZ) }}
+                <p class="footnote">{{ c.MATRIZ.tamanos }} Ver <a href="{{ url_for('analytics.knowledge') }}#C5">C5</a>.</p>
+            </article>
+        </div>
+    </div>
+</section>
+{% endblock %}

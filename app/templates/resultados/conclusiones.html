@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% block content %}
+{{ ui.page_hero('RESULTADOS', 'Conclusiones y referencias', 'Cumplimiento de los objetivos, conclusiones, limitaciones, oportunidades de mejora y fuentes consultadas.') }}
+
+<section class="section section-light">
+    <div class="container content-narrow">
+        {{ ui.local_nav([('cumplimiento', 'Cumplimiento de objetivos'), ('conclusiones', 'Conclusiones'), ('limitaciones', 'Limitaciones'), ('mejoras', 'Oportunidades de mejora'), ('referencias', 'Referencias')]) }}
+
+        <h2 id="cumplimiento">Cumplimiento de los objetivos</h2>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Objetivo específico</th><th>Resultado</th><th>Estado</th></tr></thead>
+            <tbody>
+                <tr><td>1. Construir el prototipo físico integrado a NEOGRID.</td><td>Tablero con 7 dispositivos y conexión a la red de 5 V de la maqueta.</td><td>{{ ui.status('ok', 'Cumplido') }}</td></tr>
+                <tr><td>2. Implementar AgroSmartDB y simular más de un millón de mediciones.</td><td>8 entidades y 1.000.003 mediciones con origen identificado.</td><td>{{ ui.status('ok', 'Cumplido') }}</td></tr>
+                <tr><td>3. Construir AgroSmart DW y el ETL en SSIS.</td><td>Estrella de 1 + 8 tablas; paquete con rechazos, prevención de duplicados y cuadre.</td><td>{{ ui.status('ok', 'Cumplido') }}</td></tr>
+                <tr><td>4. Desarrollar el dashboard y descubrir conocimiento evidente.</td><td>8 indicadores, 7 análisis, 5 conocimientos y 2 decisiones validadas con SQL.</td><td>{{ ui.status('ok', 'Cumplido') }}</td></tr>
+                <tr><td>5. Publicar el sitio web con el dashboard integrado.</td><td>Sitio en Render con las secciones del PGC y el informe insertado.</td><td>{{ ui.status('ok', 'Cumplido') }}</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <h2 id="conclusiones">Conclusiones</h2>
+        <ul class="check-list">
+            <li>AgroSmart demostró una cadena de datos completa y reproducible para un módulo agropecuario: del prototipo con sensores de bajo costo a un Data Warehouse en estrella y un dashboard. Los conteos se conciliaron en cada paso, de 1.000.003 mediciones en el origen a 999.992 en el periodo analizado.</li>
+            <li>El modelo dimensional permitió responder las ocho preguntas orientadoras con medidas explícitas. La matriz multivariada calcula cada combinación de ubicación, tipo de dispositivo y franja directamente sobre los datos, y su resultado se reprodujo con SQL.</li>
+            <li>El hallazgo más importante para la gestión es que las alertas de humedad del sustrato no son selectivas: representan el 95,14 % de los eventos y en su mayoría son cruces repetidos del umbral dentro de un mismo episodio. Una regla con histéresis 3.300/3.200 las reduciría en un 61,7 %.</li>
+            <li>La validación corrigió una lectura inicial: la Parcela 2 no tiene más episodios secos que la Parcela 1, sino episodios más largos. Por eso el indicador recomendado para compararlas es el % de lecturas ≥ 3.300 ADC.</li>
+            <li>El análisis se presenta en términos de asociación. Varios resultados reproducen reglas programadas en el generador (ciclo diario, efecto de la lluvia, base más seca de la Parcela 2), así que confirman la coherencia del proceso de datos, pero no describen un cultivo real.</li>
+        </ul>
+
+        <h2 id="limitaciones">Limitaciones</h2>
+        <ul class="check-list">
+            <li>Todos los datos analizados son simulados y cubren solo 3,3 días, con un sensor por variable ambiental.</li>
+            <li>Las lecturas del sustrato y de la lluvia analógica están en ADC y no se calibraron contra contenido de agua ni precipitación.</li>
+            <li>Los umbrales de alerta (3.300 ADC, 25 °C, 150 lux) son reglas operativas del prototipo y no están validados agronómicamente.</li>
+            <li>No hay registros de riego, de atención de alertas ni de tiempo de respuesta, por lo que no se puede medir el efecto de una acción.</li>
+            <li>La dimensión tipo de dispositivo no discrimina en el análisis de alertas, porque todas provienen de sensores.</li>
+            <li>El dashboard usa el modo Importar con datos fijos; todavía no muestra lecturas en tiempo real.</li>
+        </ul>
+
+        <h2 id="mejoras">Oportunidades de mejora</h2>
+        <ul class="check-list">
+            <li>Conectar el ESP32 por Wi-Fi a una API que registre las lecturas reales en AgroSmartDB y ejecutar el ETL de forma incremental.</li>
+            <li>Implementar la histéresis en el firmware y en el generador, y medir la reducción real de alertas con el indicador de la decisión D1.</li>
+            <li>Calibrar los sensores capacitivos con el sustrato real de las parcelas, siguiendo el procedimiento descrito por Placidi et al. (2020).</li>
+            <li>Registrar los riegos y la atención de las alertas para medir tiempos de respuesta y evaluar el piloto de la decisión D2.</li>
+            <li>Ampliar el periodo de captura para observar diferencias entre días y semanas, e integrar los datos con otros componentes de NEOGRID.</li>
+        </ul>
+
+        <h2 id="referencias">Referencias</h2>
+        <ol class="references">
+            {% for r in c.REFERENCIAS %}
+            <li>{{ r.cita | safe }}{% if r.url %} <a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.url }}</a>{% endif %}</li>
+            {% endfor %}
+        </ol>
+    </div>
+</section>
+{% endblock %}

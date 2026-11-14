@@ -1,20 +1,75 @@
 {% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
 {% block content %}
-<section class="page-hero">
-    <div class="container"><span class="eyebrow">PLATAFORMA IOT</span><h1>Monitoreo</h1><p>Espacio destinado a visualizar las lecturas del prototipo y la información almacenada.</p></div>
-</section>
+{{ ui.page_hero('PLATAFORMA IOT', 'Monitoreo', 'Variables que mide el módulo, con su comportamiento en el periodo simulado cargado en AgroSmart DW.') }}
+
 <section class="section section-light">
     <div class="container">
-        <div class="status-banner"><span class="status-dot status-dot-muted"></span><div><strong>Integración pendiente</strong><p>La interfaz está preparada. La recepción de datos del ESP32, la API y las consultas a SQL Server se conectarán en una siguiente fase.</p></div></div>
-        <div class="monitor-grid">
-            <article class="monitor-card"><span class="card-label">AMBIENTE</span><h3>Temperatura</h3><div class="metric-placeholder">-- <small>°C</small></div><p>DHT22 · Sin conexión de datos</p></article>
-            <article class="monitor-card"><span class="card-label">AMBIENTE</span><h3>Humedad relativa</h3><div class="metric-placeholder">-- <small>%</small></div><p>DHT22 · Sin conexión de datos</p></article>
-            <article class="monitor-card"><span class="card-label">ILUMINACIÓN</span><h3>Intensidad lumínica</h3><div class="metric-placeholder">-- <small>lux</small></div><p>BH1750 · Sin conexión de datos</p></article>
-            <article class="monitor-card"><span class="card-label">SUSTRATO</span><h3>Parcela 1</h3><div class="metric-placeholder">-- <small>ADC</small></div><p>Capacitivo 1 · Sin conexión de datos</p></article>
-            <article class="monitor-card"><span class="card-label">SUSTRATO</span><h3>Parcela 2</h3><div class="metric-placeholder">-- <small>ADC</small></div><p>Capacitivo 2 · Sin conexión de datos</p></article>
-            <article class="monitor-card"><span class="card-label">DETECCIÓN DE AGUA</span><h3>FC-37</h3><div class="metric-placeholder">--</div><p>Estado · Sin conexión de datos</p></article>
+        <div class="status-banner">
+            <span class="status-dot status-dot-muted"></span>
+            <div>
+                <strong>Lecturas en vivo: integración prevista para una fase posterior</strong>
+                <p>Las tarjetas resumen el periodo simulado del {{ c.PERIODO }} y no son lecturas en tiempo real. La conexión del ESP32 por Wi-Fi hacia una API y SQL Server se describe al final de esta página.</p>
+            </div>
         </div>
-        <p class="footnote">Los guiones indican que todavía no se está consultando una fuente de datos en vivo. No representan lecturas del sensor.</p>
+
+        <div class="monitor-grid">
+            <article class="monitor-card">
+                <span class="card-label">AMBIENTE · DHT22 · DIS-004</span>
+                <h3>Temperatura</h3>
+                <div class="metric">17,07 <small>°C promedio</small></div>
+                <p>Mediana 16,75 °C · mínima 9,53 °C · máxima 24,50 °C · 142.856 lecturas.</p>
+            </article>
+            <article class="monitor-card">
+                <span class="card-label">AMBIENTE · DHT22 · DIS-004</span>
+                <h3>Humedad relativa</h3>
+                <div class="metric">76,10 <small>% promedio</small></div>
+                <p>Promedio por hora entre 68,42 % (18 h) y 84,10 % (2 h).</p>
+            </article>
+            <article class="monitor-card">
+                <span class="card-label">ILUMINACIÓN · BH1750 · DIS-005</span>
+                <h3>Intensidad lumínica</h3>
+                <div class="metric">333,76 <small>lux promedio</small></div>
+                <p>Incluye las horas de noche. De 6 a 17 h sin lluvia el promedio es 802,69 lux; con lluvia, 148,62 lux.</p>
+            </article>
+            <article class="monitor-card">
+                <span class="card-label">SUSTRATO · CAPACITIVO 1 · DIS-001</span>
+                <h3>Parcela 1</h3>
+                <div class="metric">3.098,81 <small>ADC promedio</small></div>
+                <p>4,67 % de las lecturas en 3.300 ADC o más. A mayor valor, más seco el sustrato.</p>
+            </article>
+            <article class="monitor-card">
+                <span class="card-label">SUSTRATO · CAPACITIVO 2 · DIS-002</span>
+                <h3>Parcela 2</h3>
+                <div class="metric">3.217,41 <small>ADC promedio</small></div>
+                <p>25,82 % de las lecturas en 3.300 ADC o más; de noche, 64,6 %.</p>
+            </article>
+            <article class="monitor-card">
+                <span class="card-label">DETECCIÓN DE AGUA · FC-37 · DIS-003</span>
+                <h3>Lluvia</h3>
+                <div class="metric">11,34 <small>% de lecturas con agua</small></div>
+                <p>16.200 de 142.856 lecturas digitales en tres bloques de 3 horas; 3 eventos LLUVIA_DETECTADA.</p>
+            </article>
+        </div>
+
+        <div class="content-narrow">
+            <h2 class="h2">Estado del sustrato en el periodo</h2>
+            <p>Lecturas de los dos sensores capacitivos (285.712) según la clasificación del módulo. Todas las lecturas que no están en estado SECO ocurrieron en ciclos con lluvia.</p>
+        </div>
+        {% import 'macros/charts.html' as charts with context %}
+        {{ charts.hbars(c.SUSTRATO_ESTADO, 'lecturas', 0, 'Lecturas de humedad del sustrato por estado') }}
+
+        <div class="content-narrow">
+            <h2 class="h2">Conexión en vivo prevista</h2>
+            <p>La siguiente fase conectará el prototipo físico con la plataforma. El diseño previsto es:</p>
+            <ol class="objective-list">
+                <li>El ESP32 envía cada ciclo de captura por Wi-Fi, en formato JSON, a un servicio de la aplicación Flask.</li>
+                <li>El servicio valida los rangos de cada variable y registra la medición en AgroSmartDB con origen REAL.</li>
+                <li>El paquete SSIS se ejecuta de forma incremental para pasar las filas nuevas a AgroSmart DW, sin duplicados gracias a la búsqueda de existencia.</li>
+                <li>Esta página mostrará la última lectura de cada sensor, y el dashboard se actualizará con las lecturas reales.</li>
+            </ol>
+            <p class="footnote">Esta fase requiere un servidor de base de datos accesible desde internet, o una puerta de enlace de Power BI. No forma parte del alcance de la entrega actual.</p>
+        </div>
     </div>
 </section>
 {% endblock %}
