@@ -139,17 +139,24 @@ SUSTRATO_TABLA = [
     ["Mediana (ADC)", "3.127,87", "3.241,45"],
     ["Desviación estándar (ADC)", "154,24", "131,50"],
     ["Lecturas ≥ 3.300 ADC", "4,67 % (6.671)", "25,82 % (36.879)"],
-    ["Lecturas ≥ 3.300 ADC de noche", "18,3 %", "64,6 %"],
+    ["Lecturas ≥ 3.300 ADC de noche", "18,27 %", "64,60 %"],
     ["Lecturas por sensor", "142.856", "142.856"],
 ]
 
 SUSTRATO_UMBRAL = {
-    "grupos": ["Todo el periodo", "Franja noche|(18–23 h)"],
+    "grupos": ["Madrugada", "Mañana", "Tarde", "Noche", "Total"],
     "series": [
-        {"nombre": "Sensor 1 · Parcela 1", "valores": [4.67, 18.3]},
-        {"nombre": "Sensor 2 · Parcela 2", "valores": [25.82, 64.6]},
+        {"nombre": "Sensor 1 · Parcela 1", "valores": [0, 0, 2.32, 18.27, 4.67]},
+        {"nombre": "Sensor 2 · Parcela 2", "valores": [16.46, 0.97, 26.23, 64.60, 25.82]},
     ],
 }
+
+# Medida «% Lecturas sustrato 3300 o mas» por ubicación y franja (página 4 del dashboard)
+SUSTRATO_FRANJA_TABLA = [
+    ["Parcela 1", "0,00 %", "0,00 %", "2,32 %", "18,27 %", "4,67 %"],
+    ["Parcela 2", "16,46 %", "0,97 %", "26,23 %", "64,60 %", "25,82 %"],
+    ["Total", "8,23 %", "0,48 %", "14,28 %", "41,43 %", "15,24 %"],
+]
 
 ILUMINACION_LLUVIA = {
     "grupos": ["Promedio 6–17 h", "Mediana 6–17 h", "Promedio 12–17 h|(control de hora)"],
@@ -300,21 +307,26 @@ DECISIONES = [
         "id": "D2",
         "titulo": "Riego diferenciado para la Parcela 2 entre las 16 y las 18 h",
         "accion": "Programar un riego adicional para la Parcela 2 entre las 16 y las 18 h, antes del máximo nocturno del sustrato, en un piloto de 2 semanas con la Parcela 1 como referencia.",
-        "hallazgo": "B2 y C5: la Parcela 2 tiene 25,82 % de lecturas ≥ 3.300 ADC frente a 4,67 % de la Parcela 1; de noche, 64,6 % frente a 18,3 %. Su promedio es 3.217,41 frente a 3.098,81 ADC, y la celda Parcela 2–noche concentra 7.976 alertas.",
+        "hallazgo": "B2 y C5: la Parcela 2 tiene 25,82 % de lecturas ≥ 3.300 ADC frente a 4,67 % de la Parcela 1. Por franja, la Parcela 2 pasa de 26,23 % en la tarde a 64,60 % en la noche (Parcela 1: 2,32 % y 18,27 %). Su promedio es 3.217,41 frente a 3.098,81 ADC, y la celda Parcela 2–noche concentra 7.976 alertas.",
         "dirigida": "Ubicación UBI-002 Parcela 2; dispositivo DIS-002; proceso PRO-002; franja tarde-noche.",
         "mejora": "Reducir el tiempo que la Parcela 2 pasa por encima de 3.300 ADC durante la noche.",
-        "indicador": "% de lecturas de sustrato ≥ 3.300 ADC en la Parcela 2 de noche (línea base 64,6 %; meta ≤ 20 %), con la medida DAX «% Lecturas sustrato >= 3300».",
+        "indicador": "% de lecturas de sustrato ≥ 3.300 ADC en la Parcela 2 de noche (línea base 64,60 %; meta ≤ 20 %), con la medida DAX «% Lecturas sustrato 3300 o mas», visible por ubicación y franja en la página «Análisis multivariado» del dashboard.",
         "limitaciones": "El generador asigna a la Parcela 2 una base más seca (3.260 frente a 3.150 ADC). No hay registros de riego ni calibración de los sensores, y la relación observada es una asociación, no una causa demostrada.",
         "grafico": "d2",
     },
 ]
 
-MEDIDA_D2 = """% Lecturas sustrato >= 3300 =
-DIVIDE (
+MEDIDA_D2 = """% Lecturas sustrato 3300 o mas =
+VAR Base =
     CALCULATE ( [Mediciones],
+        REMOVEFILTERS ( DIM_CONCEPTO ),
+        DIM_CONCEPTO[codigo_concepto] = "VAR-003" )
+VAR Altas =
+    CALCULATE ( [Mediciones],
+        REMOVEFILTERS ( DIM_CONCEPTO ),
         DIM_CONCEPTO[codigo_concepto] = "VAR-003",
-        FACT_REGISTRO_AGROSMART[valor_numerico] >= 3300 ),
-    CALCULATE ( [Mediciones], DIM_CONCEPTO[codigo_concepto] = "VAR-003" ) )"""
+        FACT_REGISTRO_AGROSMART[valor_numerico] >= 3300 )
+RETURN DIVIDE ( Altas, Base )"""
 
 SQL_M1 = """USE [AgroSmart DW];
 SELECT u.nombre_ubicacion, h.franja_dia, SUM(f.cantidad_eventos) AS alertas
@@ -330,10 +342,11 @@ ORDER BY u.nombre_ubicacion, h.franja_dia;"""
 MEDIDAS_DAX = """Mediciones = SUM ( FACT_REGISTRO_AGROSMART[cantidad_mediciones] )
 Eventos    = SUM ( FACT_REGISTRO_AGROSMART[cantidad_eventos] )
 Alertas    = CALCULATE ( [Eventos],
-    DIM_CONCEPTO[codigo_concepto] IN
-        { "ALERTA_HUMEDAD_SUSTRATO", "ALERTA_TEMPERATURA", "ALERTA_ILUMINACION" } )
+    KEEPFILTERS ( DIM_CONCEPTO[codigo_concepto] IN
+        { "ALERTA_HUMEDAD_SUSTRATO", "ALERTA_TEMPERATURA", "ALERTA_ILUMINACION" } ) )
 % Alertas sobre eventos        = DIVIDE ( [Alertas], [Eventos] )
-Alertas por 1.000 mediciones   = DIVIDE ( [Alertas], [Mediciones] ) * 1000
+Alertas por 1.000 mediciones   = DIVIDE ( [Alertas],
+    CALCULATE ( [Mediciones], REMOVEFILTERS ( DIM_CONCEPTO ) ) ) * 1000
 Dispositivos activos = CALCULATE ( DISTINCTCOUNT ( FACT_REGISTRO_AGROSMART[dispositivo_key] ),
     FACT_REGISTRO_AGROSMART[tipo_registro] = "MEDICION" )
 Temperatura promedio (°C) = CALCULATE ( AVERAGE ( FACT_REGISTRO_AGROSMART[valor_numerico] ),
@@ -342,7 +355,8 @@ Lecturas con lluvia = CALCULATE ( [Mediciones],
     DIM_CONCEPTO[codigo_concepto] = "VAR-006",
     FACT_REGISTRO_AGROSMART[valor_numerico] = 0 )
 % Lecturas con lluvia = DIVIDE ( [Lecturas con lluvia],
-    CALCULATE ( [Mediciones], DIM_CONCEPTO[codigo_concepto] = "VAR-006" ) )"""
+    CALCULATE ( [Mediciones], DIM_CONCEPTO[codigo_concepto] = "VAR-006" ) )
+Ciclos con lluvia = FORMAT ( COUNTROWS ( CiclosConLluvia ), "#,0" )"""
 
 FILTRO_M = """#"Filas filtradas" = Table.SelectRows(dbo_FACT_REGISTRO_AGROSMART,
     each [fecha_hora_registro] >= #datetime(2026,11,1,0,0,0)
@@ -362,6 +376,38 @@ CiclosConLluvia = CALCULATETABLE (
 condicion_lluvia = IF ( ISBLANK ( FACT_REGISTRO_AGROSMART[id_ciclo_captura] ), BLANK (),
     IF ( FACT_REGISTRO_AGROSMART[id_ciclo_captura] IN CiclosConLluvia,
          "Con lluvia", "Sin lluvia" ) )"""
+
+# ---------------------------------------------------------------------------
+# Del dato a la decisión (material «Descubrimiento de conocimiento evidente»)
+# ---------------------------------------------------------------------------
+CADENA = [
+    {"nivel": "1. Dato", "texto": "24.339 eventos ALERTA_HUMEDAD_SUSTRATO entre el 01/11 y el 04/11/2026."},
+    {"nivel": "2. Información", "texto": "Son el 95,14 % de los 25.581 eventos: el tipo de evento más frecuente."},
+    {"nivel": "3. Conocimiento", "texto": "Se concentran en la Parcela 2 de noche (7.976 alertas, 31,7 %), donde el 64,60 % de las lecturas supera 3.300 ADC; son episodios largos con cruces repetidos del umbral."},
+    {"nivel": "4. Decisión posible", "texto": "Rediseñar la alerta con histéresis (D1) y regar la Parcela 2 entre las 16 y las 18 h (D2)."},
+]
+
+TIPOS_PREGUNTA = [
+    {"tipo": "Descriptiva", "responde": "¿Cuántos registros hay y qué categoría es más frecuente?", "analisis": "Indicadores, U2, U3", "conocimiento": "C2"},
+    {"tipo": "Promedio frente a mediana", "responde": "¿Qué medida representa mejor el centro de la distribución?", "analisis": "U1, B2", "conocimiento": "C1"},
+    {"tipo": "Comparativa", "responde": "¿Qué grupo tiene más casos absolutos y cuál mayor concentración relativa?", "analisis": "M1 (alertas y tasa por 1.000 mediciones), B2", "conocimiento": "C5"},
+    {"tipo": "Relacional", "responde": "¿Cómo cambia una variable cuando cambia otra?", "analisis": "B1 (numérica + numérica), B3 (categórica + numérica)", "conocimiento": "C3, C4"},
+    {"tipo": "Multivariada", "responde": "¿Dónde se concentra el fenómeno al combinar tres variables?", "analisis": "M1: ubicación × tipo de dispositivo × franja", "conocimiento": "C5"},
+    {"tipo": "Tendencia", "responde": "¿Cómo cambia el comportamiento en el tiempo?", "analisis": "Eventos por día, B1 por hora", "conocimiento": "C1, C3"},
+    {"tipo": "Concentración", "responde": "¿Pocas categorías reúnen gran parte del fenómeno?", "analisis": "U2 (95,14 %), M1 (31,7 % en una celda)", "conocimiento": "C2, C5"},
+    {"tipo": "Casos atípicos", "responde": "¿Qué valores inusuales hay y por qué?", "analisis": "Validación: sustrato < 2.800 ADC, día 04/11 incompleto", "conocimiento": "Validación"},
+]
+
+ETAPA4 = [
+    ("5 indicadores generales", "8 indicadores (Resumen)"),
+    ("3 análisis univariados", "U1 temperatura, U2 eventos por tipo, U3 estado del sustrato"),
+    ("3 análisis bivariados", "B1 temperatura y humedad por hora, B2 sustrato por sensor, B3 iluminación con y sin lluvia"),
+    ("1 análisis multivariado", "M1 alertas por ubicación, tipo de dispositivo y franja, más % del sustrato ≥ 3.300 ADC por ubicación y franja"),
+    ("5 conocimientos evidentes", "C1 a C5"),
+    ("1 visualización por conocimiento", "Un gráfico por conocimiento y su página en el dashboard"),
+    ("1 limitación por conocimiento", "Elemento «Limitación» en C1 a C5"),
+    ("2 decisiones sustentadas", "D1 histéresis de la alerta del sustrato y D2 riego diferenciado de la Parcela 2"),
+]
 
 # ---------------------------------------------------------------------------
 # Referencias (APA 7)

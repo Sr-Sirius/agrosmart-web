@@ -186,6 +186,6 @@
 {% elif key == 'd1' %}
     {{ columns(c.REGLAS_ALERTA, [0, 5000, 10000, 15000, 20000], 0, 'alertas', 'Alertas de sustrato por regla y sensor') }}
 {% elif key == 'd2' %}
-    {{ columns(c.SUSTRATO_UMBRAL, [0, 20, 40, 60, 80], 1, '% de lecturas ≥ 3.300 ADC', '% de lecturas del sustrato iguales o superiores a 3.300 ADC', ' %') }}
+    {{ columns(c.SUSTRATO_UMBRAL, [0, 20, 40, 60, 80], 2, '% de lecturas ≥ 3.300 ADC', '% de lecturas del sustrato iguales o superiores a 3.300 ADC por sensor y franja', ' %') }}
 {% endif %}
 {%- endmacro %}

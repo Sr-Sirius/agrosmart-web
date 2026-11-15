@@ -433,3 +433,12 @@ code { padding: 1px 5px; border-radius: 4px; background: #eef2ec; font-size: .92
     .chart { overflow-x: auto; }
     .chart .chart-svg { min-width: 520px; }
 }
+
+/* Cadena dato -> información -> conocimiento -> decisión */
+.chain { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0 36px; padding: 0; list-style: none; counter-reset: none; }
+.chain li { position: relative; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: white; }
+.chain li:last-child { border-color: var(--green); background: var(--sage); }
+.chain li:not(:last-child)::after { content: '→'; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); color: var(--green); font-weight: 800; }
+.chain span { color: var(--green); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.chain p { margin: 6px 0 0; color: #3d4b43; font-size: 13px; }
+@media (max-width: 900px) { .chain { grid-template-columns: 1fr; } .chain li:not(:last-child)::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -16px; transform: none; } }

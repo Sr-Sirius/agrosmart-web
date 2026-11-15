@@ -7,7 +7,7 @@
 <section class="section section-light">
     <div class="container">
         <div class="content-narrow">
-            {{ ui.local_nav([('lista', 'Lista de validación'), ('reproduccion', 'Reproducción en SQL'), ('grupos', 'Grupos, faltantes y atípicos'), ('regla', 'Revisión de la regla de alerta'), ('decisiones', 'Decisiones')]) }}
+            {{ ui.local_nav([('lista', 'Lista de validación'), ('reproduccion', 'Reproducción en SQL'), ('grupos', 'Grupos, faltantes y atípicos'), ('regla', 'Revisión de la regla de alerta'), ('decisiones', 'Decisiones'), ('etapa4', 'Resultado esperado')]) }}
             <h2 id="lista" class="h2">Lista de validación</h2>
             <p>Cada hallazgo se revisó con las ocho preguntas de validación del conocimiento evidente.</p>
         </div>
@@ -43,6 +43,7 @@
                 <li><strong>Faltantes:</strong> 0 mediciones sin valor. Los 25.581 registros sin <code>condicion_lluvia</code> son eventos, que no tienen ciclo de lluvia asociado, y se excluyen de B3 a propósito.</li>
                 <li><strong>Atípicos:</strong> se investigaron antes de decidir qué hacer con ellos. Las 12.346 lecturas de sustrato por debajo de 2.800 ADC ocurren todas en ciclos con lluvia. La iluminación diurna menor de 150 lux aparece en el 47,0 % de las lecturas con lluvia y solo en el 3,3 % sin lluvia. Ambos casos son comportamiento esperado del escenario, por lo que se conservaron.</li>
                 <li><strong>Último día incompleto:</strong> el 04/11 solo tiene datos hasta las 07:21 (373 eventos). Se indica en el subtítulo del gráfico de eventos por día para no leerlo como una caída.</li>
+                <li><strong>Corrección de medidas durante la validación:</strong> al filtrar la segmentación de conceptos por «ALERTA», la tasa por 1.000 mediciones quedaba vacía, porque el denominador también se filtraba. Además, la medida Alertas ignoraba la alerta elegida. Se ajustaron las dos medidas (REMOVEFILTERS en el denominador y KEEPFILTERS en Alertas). Sin filtros dan los mismos valores, y ahora la segmentación responde: con ALERTA_ILUMINACION la matriz muestra 807 alertas y 24,91 por 1.000 mediciones.</li>
                 <li><strong>Control de la hora en B3:</strong> como dos de los tres bloques de lluvia fueron de tarde, la comparación se repitió solo entre 12 y 17 h. La diferencia se mantuvo (−82,1 %).</li>
             </ul>
 
@@ -77,7 +78,7 @@
             </header>
             <div class="knowledge-body">
                 <div class="knowledge-visual">
-                    <span class="visual-label">{% if d.id == 'D1' %}Alertas de sustrato según la regla y el sensor{% else %}% de lecturas del sustrato ≥ 3.300 ADC por sensor{% endif %} · {{ c.PERIODO_CORTO }}</span>
+                    <span class="visual-label">{% if d.id == 'D1' %}Alertas de sustrato según la regla y el sensor{% else %}% de lecturas del sustrato ≥ 3.300 ADC por sensor y franja{% endif %} · {{ c.PERIODO_CORTO }}</span>
                     {{ charts.by_key(d.grafico) }}
                 </div>
                 <dl class="knowledge-grid">
@@ -92,6 +93,19 @@
             {% if d.id == 'D2' %}{{ ui.code(c.MEDIDA_D2, 'Ver medida DAX del indicador de seguimiento') }}{% endif %}
         </article>
         {% endfor %}
+
+        <div class="content-narrow">
+            <h2 id="etapa4" class="h2">Resultado esperado de la etapa de descubrimiento</h2>
+            <p>Comparación con las evidencias mínimas del material de conocimiento evidente:</p>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Evidencia mínima</th><th>Cómo se cumple en AgroSmart</th><th>Estado</th></tr></thead>
+            <tbody>
+                {% for req, how in c.ETAPA4 %}<tr><td>{{ req }}</td><td>{{ how }}</td><td>{{ ui.status('ok', 'Cumplido') }}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+        </div>
     </div>
 </section>
 {% endblock %}

@@ -91,6 +91,21 @@
         </div>
 
         <div class="content-narrow">
+            <h3>Tipos de pregunta cubiertos</h3>
+            <p>Las preguntas cubren los tipos de análisis propuestos en el material de descubrimiento de conocimiento evidente:</p>
+        </div>
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Tipo de pregunta</th><th>Qué responde</th><th>Análisis del dashboard</th><th>Conocimiento</th></tr></thead>
+            <tbody>
+                {% for t in c.TIPOS_PREGUNTA %}
+                <tr><td><strong>{{ t.tipo }}</strong></td><td>{{ t.responde }}</td><td>{{ t.analisis }}</td><td>{{ t.conocimiento }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        <div class="content-narrow">
             <h2 id="indicadores" class="h2">Indicadores generales y denominadores</h2>
             <p>El dashboard tiene 8 indicadores; la actividad exige al menos 5. Cuando un indicador es una tasa o un porcentaje, se indica su denominador.</p>
         </div>
@@ -153,6 +168,14 @@
                 <p>Matriz calculada directamente sobre la tabla de hechos para cada combinación de las tres variables. Muestra la cantidad absoluta y la tasa por 1.000 mediciones. El denominador de cada celda son las mediciones de esa ubicación y franja; el de la fila Total incluye todas las mediciones de la franja, también las de Ambiente general.</p>
                 {{ charts.heatmap(c.MATRIZ) }}
                 <p class="footnote">{{ c.MATRIZ.tamanos }} Ver <a href="{{ url_for('analytics.knowledge') }}#C5">C5</a>.</p>
+                <h3>Complemento: % de lecturas del sustrato ≥ 3.300 ADC por ubicación y franja</h3>
+                <p>Medida «% Lecturas sustrato 3300 o mas». El denominador son las lecturas de humedad del sustrato de cada ubicación y franja. Es el indicador de seguimiento de la decisión D2.</p>
+                <div class="table-wrap">
+                <table class="data-table compact">
+                    <thead><tr><th>Ubicación</th><th>Madrugada</th><th>Mañana</th><th>Tarde</th><th>Noche</th><th>Total</th></tr></thead>
+                    <tbody>{% for row in c.SUSTRATO_FRANJA_TABLA %}<tr>{% for cell in row %}<td{% if not loop.first %} class="num"{% endif %}>{% if row[0] == 'Total' %}<strong>{{ cell }}</strong>{% else %}{{ cell }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+                </table>
+                </div>
             </article>
         </div>
     </div>

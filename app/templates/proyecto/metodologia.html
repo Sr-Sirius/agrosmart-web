@@ -86,6 +86,7 @@
             <p>CRISP-DM es cíclico, y el proyecto tuvo dos regresos documentados:</p>
             <ul class="check-list">
                 <li><strong>De la evaluación a la preparación de datos.</strong> Al conciliar los conteos se encontraron 20 filas de prueba fuera del periodo simulado (11 mediciones y 6 eventos del 11/11/2026, y 3 mediciones del 12/11/2026 cargadas por el script de prueba de rechazos). Se excluyeron con un filtro en Power Query, y el análisis quedó con 1.025.573 filas.</li>
+                <li><strong>De la evaluación a las medidas del modelo.</strong> Al probar la segmentación de alertas, la tasa por 1.000 mediciones quedaba vacía porque el filtro de concepto también actuaba sobre el denominador. Se corrigieron las medidas Alertas y Alertas por 1.000 mediciones y se volvió a publicar el informe.</li>
                 <li><strong>De la evaluación al modelado.</strong> La primera lectura de la matriz multivariada sugería que la Parcela 2 tenía más episodios secos. El recálculo con histéresis mostró que ambas parcelas tienen casi los mismos episodios y que la diferencia está en su duración, lo que cambió el indicador propuesto para la decisión D2.</li>
             </ul>
         </div>

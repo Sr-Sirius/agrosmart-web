@@ -42,7 +42,8 @@
                     <li>Pase el cursor sobre un elemento para ver su cantidad exacta y el número de mediciones.</li>
                     <li>En la página multivariada, la segmentación <strong>Concepto</strong> permite ver un solo tipo de alerta.</li>
                 </ol>
-                <p class="footnote">Dos pruebas rápidas de los filtros: en «Resumen», al seleccionar la fecha 02/11/2026 la tarjeta de eventos debe mostrar 9.174. En «Análisis multivariado», al elegir ALERTA_ILUMINACION en la segmentación de concepto, la matriz debe mostrar 807 alertas, todas en Acceso del invernadero y en la tarde.</p>
+                <p class="footnote">Dos pruebas rápidas de los filtros: en «Resumen», al seleccionar la fecha 02/11/2026 el gráfico y las tarjetas se recalculan para ese día (9.174 eventos). En «Análisis multivariado», al elegir ALERTA_ILUMINACION en la segmentación de concepto, la matriz muestra 807 alertas, todas en Acceso del invernadero y en la tarde (24,91 por 1.000 mediciones).</p>
+                <p class="footnote">Las tarjetas del informe abrevian las cifras grandes (por ejemplo, «1 mill.»). Los valores exactos están arriba en esta página y en la página Validación del informe.</p>
             </div>
             <div>
                 <h2 class="h2">Páginas del informe</h2>
@@ -53,8 +54,8 @@
                         <tr><td>1. Resumen</td><td>Indicadores generales, eventos registrados por día y segmentaciones.</td></tr>
                         <tr><td>2. Análisis univariados</td><td>U1 temperatura, U2 eventos por tipo, U3 estado del sustrato.</td></tr>
                         <tr><td>3. Análisis bivariados</td><td>B1 temperatura y humedad por hora, B2 sustrato por sensor, B3 iluminación con y sin lluvia.</td></tr>
-                        <tr><td>4. Análisis multivariado</td><td>M1 matriz de alertas por ubicación, tipo de dispositivo y franja.</td></tr>
-                        <tr><td>5. Validación</td><td>Conteos de control, ciclos con lluvia y consulta SQL de reproducción.</td></tr>
+                        <tr><td>4. Análisis multivariado</td><td>M1 matriz de alertas y tasa por ubicación, tipo de dispositivo y franja; matriz del % de lecturas del sustrato ≥ 3.300 ADC; segmentación por tipo de alerta.</td></tr>
+                        <tr><td>5. Validación</td><td>Recuento por tipo de registro (1.025.573), ciclos con lluvia (16.200) y consulta SQL que reproduce la matriz M1.</td></tr>
                     </tbody>
                 </table>
                 </div>
@@ -64,10 +65,18 @@
         <h2 class="h2">Capturas del informe</h2>
         <p class="footnote">Las capturas complementan el dashboard insertado; no lo reemplazan.</p>
         <div class="gallery">
-            {{ ui.figure('pbi-resumen.webp', 'Página 1 · Resumen: indicadores, segmentaciones y eventos por día.') }}
+            {{ ui.figure('pbi-resumen.webp', 'Página 1 · Resumen: indicadores, segmentaciones y eventos por día (vista insertada en el sitio).') }}
             {{ ui.figure('pbi-univariados.webp', 'Página 2 · Análisis univariados (U1, U2 y U3).') }}
             {{ ui.figure('pbi-bivariados.webp', 'Página 3 · Análisis bivariados (B1, B2 y B3).') }}
-            {{ ui.figure('pbi-multivariado.webp', 'Página 4 · Análisis multivariado (M1).') }}
+            {{ ui.figure('pbi-multivariado.webp', 'Página 4 · Análisis multivariado: matriz M1, segmentación de alertas y % del sustrato ≥ 3.300 ADC.') }}
+            {{ ui.figure('pbi-validacion.webp', 'Página 5 · Validación: conteos de control, ciclos con lluvia y consulta SQL.') }}
+        </div>
+
+        <h2 class="h2" id="integracion">Evidencias de publicación e integración</h2>
+        <div class="gallery">
+            {{ ui.figure('evid-publicar-web.webp', 'Power BI Service: opción «Insertar en un sitio web público» habilitada para la cuenta institucional.') }}
+            {{ ui.figure('evid-sitio-filtro.webp', 'Dashboard insertado en este sitio con la segmentación ALERTA_ILUMINACION aplicada: 807 alertas, 24,91 por 1.000 mediciones.') }}
+            {{ ui.figure('evid-render-live.webp', 'Servicio agrosmart-web en Render desplegado desde la rama develop en estado Live.') }}
         </div>
     </div>
 </section>

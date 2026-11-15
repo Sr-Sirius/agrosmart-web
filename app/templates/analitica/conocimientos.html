@@ -6,6 +6,19 @@
 
 <section class="section section-light">
     <div class="container">
+        <div class="content-narrow">
+            <h2 class="h2">Del dato a la decisión</h2>
+            <p>Una gráfica presenta resultados; la interpretación en contexto los convierte en conocimiento. Este es el recorrido de los hallazgos principales de AgroSmart:</p>
+        </div>
+        <ol class="chain">
+            {% for paso in c.CADENA %}
+            <li><span>{{ paso.nivel }}</span><p>{{ paso.texto }}</p></li>
+            {% endfor %}
+        </ol>
+
+        <div class="content-narrow">
+            <h2 class="h2">Los cinco conocimientos</h2>
+        </div>
         <nav class="knowledge-index" aria-label="Conocimientos">
             {% for k in c.CONOCIMIENTOS %}
             <a href="#{{ k.id }}"><span>{{ k.id }}</span>{{ k.titulo }}</a>
