@@ -47,9 +47,11 @@ def enviar(client, datos, clave=CLAVE):
 
 
 def test_api_desactivada_por_defecto():
-    app = create_app()
-    app.config.update(TESTING=True)
-    c = app.test_client()
+    # No depende del .env local: simula la configuración de Render, sin ENABLE_DEVICE_API.
+    class ConfigRender(Config):
+        TESTING = True
+        ENABLE_DEVICE_API = False
+    c = create_app(ConfigRender).test_client()
     assert c.post("/api/lecturas", json=ciclo()).status_code == 404
     assert c.get("/monitoreo/en-vivo").status_code == 404
 
