@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% import 'macros/ui.html' as ui with context %}
+{% block content %}
+{{ ui.page_hero('PROTOTIPO EN VIVO', 'Monitoreo en vivo', 'Lecturas reales que el ESP32 envía por Wi-Fi a la API local. Se actualiza cada 2 segundos.') }}
+
+<section class="section section-light">
+    <div class="container">
+        <div class="status-banner" role="status" aria-live="polite">
+            <span id="vivo-punto" class="status-dot status-dot-muted"></span>
+            <div>
+                <strong id="vivo-estado">Esperando la primera lectura del ESP32…</strong>
+                <p id="vivo-detalle">Las lecturas son de origen REAL y no se mezclan con el periodo simulado del dashboard.</p>
+            </div>
+        </div>
+
+        <div class="monitor-grid">
+            {% for t in [
+                ('DIS-004', 'VAR-001', 'AMBIENTE · DHT22 · DIS-004', 'Temperatura', '°C', 2),
+                ('DIS-004', 'VAR-002', 'AMBIENTE · DHT22 · DIS-004', 'Humedad relativa', '%', 2),
+                ('DIS-005', 'VAR-004', 'ILUMINACIÓN · BH1750 · DIS-005', 'Iluminación', 'lux', 2),
+                ('DIS-001', 'VAR-003', 'SUSTRATO · CAPACITIVO 1 · DIS-001', 'Parcela 1', 'ADC', 1),
+                ('DIS-002', 'VAR-003', 'SUSTRATO · CAPACITIVO 2 · DIS-002', 'Parcela 2', 'ADC', 1),
+                ('DIS-003', 'VAR-006', 'DETECCIÓN DE AGUA · FC-37 · DIS-003', 'Lluvia', '', 0),
+            ] %}
+            <article class="monitor-card" data-dispositivo="{{ t[0] }}" data-variable="{{ t[1] }}" data-unidad="{{ t[4] }}" data-decimales="{{ t[5] }}">
+                <span class="card-label">{{ t[2] }}</span>
+                <h3>{{ t[3] }}</h3>
+                <div class="metric"><span class="vivo-valor">—</span> <small>{{ t[4] }}</small></div>
+                <p class="vivo-estado-lectura">Sin datos</p>
+            </article>
+            {% endfor %}
+        </div>
+
+        <div class="content-narrow">
+            <h2 class="h2">Humedad del sustrato y regla de alerta (decisión D1)</h2>
+            <p>Últimos 60 ciclos de cada sensor. La alerta se activa al llegar a 3.300 ADC y no vuelve a activarse hasta que la lectura baje de 3.200 ADC. A mayor valor, más seco el sustrato.</p>
+        </div>
+        <figure class="vivo-figura">
+            <svg id="vivo-grafico" viewBox="0 0 640 220" role="img" aria-label="Serie de humedad del sustrato de los dos sensores con los umbrales de 3.300 y 3.200 ADC"></svg>
+            <figcaption><span class="vivo-leyenda vivo-p1"></span> Parcela 1 · <span class="vivo-leyenda vivo-p2"></span> Parcela 2 · línea continua: activación 3.300 · línea punteada: rearme 3.200</figcaption>
+        </figure>
+
+        <div class="monitor-grid">
+            <article class="monitor-card">
+                <span class="card-label">SUSTRATO · REGLA ANTERIOR</span>
+                <h3>Cruces de 3.300 ADC</h3>
+                <div class="metric" id="vivo-regla-actual">0</div>
+                <p>Alertas que habría emitido la regla usada en la simulación.</p>
+            </article>
+            <article class="monitor-card">
+                <span class="card-label">SUSTRATO · DECISIÓN D1</span>
+                <h3>Alertas con histéresis</h3>
+                <div class="metric" id="vivo-histeresis">0</div>
+                <p id="vivo-activas">Parcela 1: sin alerta · Parcela 2: sin alerta</p>
+            </article>
+            <article class="monitor-card">
+                <span class="card-label">OTRAS ALERTAS</span>
+                <h3>Temperatura e iluminación</h3>
+                <div class="metric"><span id="vivo-temp">0</span> <small>temp.</small> · <span id="vivo-luz">0</span> <small>luz</small></div>
+                <p>Temperatura ≥ 25 °C; iluminación &lt; 150 lux entre 7 y 17 h.</p>
+            </article>
+        </div>
+
+        <div class="content-narrow">
+            <h2 class="h2">Últimos eventos y lecturas rechazadas</h2>
+            <ul id="vivo-eventos" class="check-list"><li>Sin eventos todavía.</li></ul>
+            <ul id="vivo-rechazos" class="check-list"></ul>
+            <p class="footnote" id="vivo-sql"></p>
+        </div>
+    </div>
+</section>
+
+<script>
+(function () {
+    const fmt = (v, d) => Number(v).toLocaleString('es-CO', {minimumFractionDigits: d, maximumFractionDigits: d});
+    const ns = 'http://www.w3.org/2000/svg';
+
+    function grafico(serie) {
+        const svg = document.getElementById('vivo-grafico');
+        svg.innerHTML = '';
+        const W = 640, H = 220, pad = 34;
+        const todos = [].concat(serie['DIS-001'] || [], serie['DIS-002'] || [], [3200, 3300]);
+        const min = Math.max(0, Math.min(...todos) - 80), max = Math.min(4095, Math.max(...todos) + 80);
+        const y = v => H - pad - (Math.min(Math.max(v, min), max) - min) / (max - min) * (H - 2 * pad);
+        const linea = (y0, punteada) => {
+            const l = document.createElementNS(ns, 'line');
+            l.setAttribute('x1', pad); l.setAttribute('x2', W - 8);
+            l.setAttribute('y1', y(y0)); l.setAttribute('y2', y(y0));
+            l.setAttribute('class', 'vivo-umbral'); if (punteada) l.setAttribute('stroke-dasharray', '5 4');
+            svg.appendChild(l);
+            const t = document.createElementNS(ns, 'text');
+            t.setAttribute('x', 2); t.setAttribute('y', y(y0) + 4); t.setAttribute('class', 'vivo-eje');
+            t.textContent = y0; svg.appendChild(t);
+        };
+        linea(3300, false); linea(3200, true);
+        [['DIS-001', 'vivo-linea-p1'], ['DIS-002', 'vivo-linea-p2']].forEach(([k, cls]) => {
+            const s = serie[k] || [];
+            if (s.length < 2) return;
+            const paso = (W - pad - 8) / (s.length - 1);
+            const p = document.createElementNS(ns, 'polyline');
+            p.setAttribute('points', s.map((v, i) => (pad + i * paso).toFixed(1) + ',' + y(v).toFixed(1)).join(' '));
+            p.setAttribute('class', cls); svg.appendChild(p);
+        });
+    }
+
+    function lista(id, items, vacio) {
+        const ul = document.getElementById(id);
+        ul.innerHTML = '';
+        if (!items.length) { if (vacio) { const li = document.createElement('li'); li.textContent = vacio; ul.appendChild(li); } return; }
+        items.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+    }
+
+    async function actualizar() {
+        let d;
+        try {
+            const r = await fetch('{{ url_for("live.ultimas") }}', {cache: 'no-store'});
+            d = await r.json();
+        } catch (e) {
+            document.getElementById('vivo-estado').textContent = 'No hay conexión con la API local.';
+            return;
+        }
+        const u = d.ultimo;
+        const punto = document.getElementById('vivo-punto');
+        if (u) {
+            const edad = (Date.now() - Date.parse(u.recibido)) / 1000;
+            const enVivo = edad < 15;
+            punto.className = 'status-dot' + (enVivo ? '' : ' status-dot-muted');
+            document.getElementById('vivo-estado').textContent = enVivo
+                ? 'En vivo · ciclo ' + u.id_ciclo + ' · ' + u.fecha_hora.replace('T', ' ').slice(0, 19)
+                : 'Sin lecturas nuevas hace ' + Math.round(edad) + ' s';
+            document.getElementById('vivo-detalle').textContent = d.total_lecturas.toLocaleString('es-CO') +
+                ' lecturas reales recibidas en esta sesión' + (u.hora_servidor ? ' · hora asignada por el servidor (sin NTP)' : '') + '.';
+            document.querySelectorAll('[data-variable]').forEach(card => {
+                const l = u.lecturas.find(x => x.dispositivo === card.dataset.dispositivo && x.variable === card.dataset.variable);
+                if (!l) return;
+                const valor = card.dataset.variable === 'VAR-006' ? (l.valor === 0 ? 'Sí' : 'No') : fmt(l.valor, +card.dataset.decimales);
+                card.querySelector('.vivo-valor').textContent = valor;
+                card.querySelector('.vivo-estado-lectura').textContent = 'Estado: ' + l.estado;
+            });
+        }
+        grafico(d.serie_sustrato);
+        document.getElementById('vivo-regla-actual').textContent = d.alertas.sustrato_regla_actual;
+        document.getElementById('vivo-histeresis').textContent = d.alertas.sustrato_histeresis;
+        document.getElementById('vivo-temp').textContent = d.alertas.temperatura;
+        document.getElementById('vivo-luz').textContent = d.alertas.iluminacion;
+        document.getElementById('vivo-activas').textContent =
+            'Parcela 1: ' + (d.alerta_activa['DIS-001'] ? 'alerta activa' : 'sin alerta') +
+            ' · Parcela 2: ' + (d.alerta_activa['DIS-002'] ? 'alerta activa' : 'sin alerta');
+        lista('vivo-eventos', d.eventos.map(e => e.fecha_hora.slice(11, 19) + ' · ' + e.tipo + ' · ' + e.dispositivo + ' · ' + fmt(e.valor, 1)), 'Sin eventos todavía.');
+        lista('vivo-rechazos', d.rechazos.map(r => 'Rechazada (ciclo ' + r.id_ciclo + '): ' + (r.dispositivo || '?') + ' ' + (r.variable || '') + ' · ' + r.motivo));
+        document.getElementById('vivo-sql').textContent = d.sql_activo
+            ? (d.ultimo_error_sql ? 'AgroSmartDB: error al guardar (' + d.ultimo_error_sql + '); las lecturas siguen en memoria.' : 'AgroSmartDB: guardando con origen REAL.')
+            : 'AgroSmartDB: no configurado; las lecturas solo están en memoria.';
+    }
+
+    actualizar();
+    setInterval(actualizar, 2000);
+})();
+</script>
+{% endblock %}

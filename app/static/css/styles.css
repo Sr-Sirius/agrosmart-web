@@ -442,3 +442,18 @@ code { padding: 1px 5px; border-radius: 4px; background: #eef2ec; font-size: .92
 .chain span { color: var(--green); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .chain p { margin: 6px 0 0; color: #3d4b43; font-size: 13px; }
 @media (max-width: 900px) { .chain { grid-template-columns: 1fr; } .chain li:not(:last-child)::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -16px; transform: none; } }
+
+/* Monitoreo en vivo (solo red local) */
+.content-narrow a.button { color: inherit; text-decoration: none; }
+.content-narrow a.button-primary { color: white; }
+.vivo-figura { margin: 12px 0 28px; padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: white; }
+.vivo-figura svg { width: 100%; height: auto; display: block; }
+.vivo-figura figcaption { margin-top: 8px; color: var(--muted); font-size: 12px; }
+.vivo-umbral { stroke: #c4a24d; stroke-width: 1.5; }
+.vivo-eje { fill: var(--muted); font-size: 10px; }
+.vivo-linea-p1, .vivo-linea-p2 { fill: none; stroke-width: 2; }
+.vivo-linea-p1 { stroke: var(--green); }
+.vivo-linea-p2 { stroke: var(--forest-deep); }
+.vivo-leyenda { display: inline-block; width: 14px; height: 3px; vertical-align: middle; }
+.vivo-p1 { background: var(--green); }
+.vivo-p2 { background: var(--forest-deep); }

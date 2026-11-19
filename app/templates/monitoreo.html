@@ -60,15 +60,19 @@
         {{ charts.hbars(c.SUSTRATO_ESTADO, 'lecturas', 0, 'Lecturas de humedad del sustrato por estado') }}
 
         <div class="content-narrow">
-            <h2 class="h2">Conexión en vivo prevista</h2>
-            <p>La siguiente fase conectará el prototipo físico con la plataforma. El diseño previsto es:</p>
+            <h2 class="h2">Conexión en vivo (en curso)</h2>
+            <p>El prototipo físico ya envía sus lecturas a la plataforma en la red local del laboratorio:</p>
             <ol class="objective-list">
-                <li>El ESP32 envía cada ciclo de captura por Wi-Fi, en formato JSON, a un servicio de la aplicación Flask.</li>
-                <li>El servicio valida los rangos de cada variable y registra la medición en AgroSmartDB con origen REAL.</li>
-                <li>El paquete SSIS se ejecuta de forma incremental para pasar las filas nuevas a AgroSmart DW, sin duplicados gracias a la búsqueda de existencia.</li>
-                <li>Esta página mostrará la última lectura de cada sensor, y el dashboard se actualizará con las lecturas reales.</li>
+                <li>El ESP32 envía cada ciclo de captura por Wi-Fi, en formato JSON, a la API de la aplicación Flask que corre en el equipo del servidor.</li>
+                <li>La API valida los rangos de cada variable, rechaza las lecturas inválidas con su motivo y aplica la regla de alerta con histéresis de la decisión D1.</li>
+                <li>Las lecturas se registran en AgroSmartDB con origen REAL, separadas de las simuladas.</li>
+                <li>Pendiente: ejecutar el paquete SSIS de forma incremental para pasarlas a AgroSmart DW y mostrarlas en una página aparte del dashboard.</li>
             </ol>
-            <p class="footnote">Esta fase requiere un servidor de base de datos accesible desde internet, o una puerta de enlace de Power BI. No forma parte del alcance de la entrega actual.</p>
+            {% if live_enabled %}
+            <p><a class="button button-primary" href="{{ url_for('live.en_vivo') }}">Ver las lecturas en vivo</a></p>
+            {% else %}
+            <p class="footnote">La vista en vivo solo está disponible en la red local, porque SQL Server no se expone a internet. Este sitio público muestra el periodo simulado.</p>
+            {% endif %}
         </div>
     </div>
 </section>

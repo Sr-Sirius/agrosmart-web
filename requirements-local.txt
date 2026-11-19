@@ -1,0 +1,4 @@
+# Dependencias adicionales para la API del ESP32 en el equipo local (no se usan en Render).
+-r requirements.txt
+pyodbc>=5.1,<6.0
+requests>=2.31,<3.0

@@ -33,6 +33,10 @@ def create_app(config_object=Config):
     app.register_blueprint(analytics_bp, url_prefix="/analitica")
     app.register_blueprint(results_bp, url_prefix="/resultados")
 
+    if app.config.get("ENABLE_DEVICE_API"):
+        from app.routes.live import registrar
+        registrar(app)
+
     @app.context_processor
     def inject_site_content():
         previous, following = _sequence_neighbors(request.endpoint)
@@ -42,6 +46,7 @@ def create_app(config_object=Config):
             "seq_prev": previous,
             "seq_next": following,
             "powerbi_embed_url": app.config.get("POWERBI_EMBED_URL", ""),
+            "live_enabled": bool(app.config.get("ENABLE_DEVICE_API")),
         }
 
     @app.template_filter("miles")

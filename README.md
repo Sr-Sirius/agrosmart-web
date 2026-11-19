@@ -15,7 +15,7 @@ Todos los textos y cifras están en `app/content.py`. Las cifras provienen de Ag
 
 ## Requisitos
 
-- Python 3.12.11 (versión fijada en `.python-version` para mantener un entorno reproducible entre desarrollo y Render).
+- Python 3.14 (versión fijada en `.python-version`; Render usa la misma versión al desplegar).
 - pip.
 
 ## Ejecución local en Windows PowerShell
@@ -118,3 +118,15 @@ Integrar los cambios mediante Pull Requests hacia `develop`. Cuando una versión
 2. Acceso seguro a los datos operacionales de AgroSmart.
 3. Carga incremental hacia AgroSmart DW y actualización del dashboard.
 4. Última lectura de cada sensor en la página de monitoreo.
+
+## Monitoreo en vivo con el ESP32 (solo red local)
+
+La API del ESP32 (`POST /api/lecturas`, `GET /api/ultimas`) y la página `/monitoreo/en-vivo` solo existen si `ENABLE_DEVICE_API=1`. En Render esa variable no se define, así que el sitio público no cambia. SQL Server nunca se expone a internet.
+
+1. Instalar las dependencias locales: `.\.venv\Scripts\python.exe -m pip install -r requirements-local.txt`
+2. En `.env` (no se sube a Git): `ENABLE_DEVICE_API=1`, `DEVICE_API_KEY=<clave larga>` y, para guardar en AgroSmartDB, `AGROSMART_DB_CONN` (ver `.env.example`).
+3. Iniciar la API para la red local: `.\.venv\Scripts\python.exe -m flask --app wsgi run --host 0.0.0.0 --port 5000`
+4. Probar sin hardware: `.\.venv\Scripts\python.exe tools\simulador_esp32.py --url http://127.0.0.1:5000/api/lecturas --clave <clave>`
+5. Abrir `http://127.0.0.1:5000/monitoreo/en-vivo`.
+
+Las lecturas se validan con los rangos de la tabla VARIABLE, las inválidas se rechazan con su motivo y la alerta del sustrato aplica la histéresis de la decisión D1 (activa en 3.300 ADC, se rearma bajo 3.200). En AgroSmartDB se guardan con origen REAL y un `id_ciclo_captura` asignado por el servidor.
